@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:painless_app/constants.dart';
-import 'package:painless_app/screens/recorder/widgets/login_avatar.dart';
-import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
+import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
+import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
+import 'package:painless_app/screens/recorder/widgets/screen_recorder.dart';
+import '../widgets/floating_buttons.dart';
+import '../widgets/login_avatar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import '../../../size_config.dart';
 import '../../../bloc/post_logic.dart';
 import '../../../bloc/post_bloc.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 import 'dart:async';
 import 'dart:math';
@@ -56,6 +57,12 @@ class _BodyState extends State<Body> {
     });
   }
 
+  void resultListener(SpeechRecognitionResult result) {
+    String sentence = result.recognizedWords;
+    print('Result listened $sentence');
+    _postBloc.add(DoPostEvent(sentence));
+  }
+
   void startListening() {
     lastWords = '';
     lastError = '';
@@ -93,7 +100,6 @@ class _BodyState extends State<Body> {
   }
 
   void errorListener(SpeechRecognitionError error) {
-    // print("Received error status: $error, listening: ${speech.isListening}");
     setState(() {
       lastError = '${error.errorMsg} - ${error.permanent}';
     });
@@ -121,126 +127,25 @@ class _BodyState extends State<Body> {
               cubit: _postBloc,
               builder: (context, state) {
                 if (state is PostedBlocState) {
-                  print(_isRecording);
                   _isRecording = state.response["agressive"];
-                  print(_isRecording);
-
                 }
 
                 return Column(
                   children: [
-                    Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            MaterialButton(
-                              onPressed: () {},
-                              color: kSurfaceColor,
-                              textColor: Colors.white,
-                              child:
-                                  // SignedAvatar(
-                                  //   image: "https://static.toiimg.com/photo/76729750.cms",
-                                  // ),
-                                  LoginAvatar(),
-                              shape: CircleBorder(),
-                            )
-                          ],
-                        )),
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(vertical: 5),
-                            child: Text(
-                              "00:00:00",
-                              style: TextStyle(
-                                color: kPrimaryLightColor,
-                                fontSize: 50,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            !_isRecording ? "Comience a grabar" : "Grabando",
-                            style: TextStyle(
-                              color: kPrimaryLightColor,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ],
-                      ),
+                    AppbarRecorder(),
+                    ScreenRecorder(isRecording: _isRecording),
+                    InitSpeechButton(
+                      hasSpeech: _hasSpeech,
+                      speech: speech,
+                      startListening: startListening,
+                      stopListening: cancelListening,
                     ),
-                    Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            RoundedButton(
-                              color: Color(0xFFfffFFF),
-                              mini: false,
-                              iconData: !_hasSpeech || speech.isListening
-                                  ? Icons.stop
-                                  : Icons.mic,
-                              bgColor: kSurfaceColor,
-                              onPressed: !_hasSpeech || speech.isListening
-                                  ? stopListening
-                                  : startListening,
-                            )
-                          ],
-                        )),
-                    Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            RoundedButton(
-                              color: Color(0xFFFFFFFFF),
-                              iconData: Icons.dashboard,
-                              onPressed: null,
-                              mini: true,
-                              bgColor: kSurfaceColor,
-                            ),
-                            RoundedButton(
-                              bgColor: kPrimaryColor,
-                              iconData: Icons.brightness_1,
-                              onPressed: null,
-                              mini: false,
-                              color: Color(0xFFFFFFFFF),
-                            ),
-                            RoundedButton(
-                              bgColor: kSurfaceColor,
-                              iconData: Icons.dehaze,
-                              onPressed: () {},
-                              mini: true,
-                              color: Color(0xFFFFFFFFF),
-                            ),
-                          ],
-                        ))
+                    FloatingButtons()
                   ],
                 );
               },
             )),
       ),
     );
-  }
-
-  void resultListener(SpeechRecognitionResult result) {
-    // ++resultListened;
-    String sentence = result.recognizedWords;
-
-    print('Result listened $sentence');
-    // context.read<PostBloc>().add(DoPostEvent(sentence));
-    // BlocProvider.of<PostBloc>(context)
-    _postBloc.add(DoPostEvent(result.recognizedWords));
-    // setState(() {
-    //   lastWords = '${result.recognizedWords} - ${result.finalResult}';
-    //   print('$lastWords');
-    // });
   }
 }
