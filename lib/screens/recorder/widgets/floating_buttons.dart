@@ -1,13 +1,26 @@
-
 import 'package:flutter/material.dart';
 import './rounded_button.dart';
 import '../../../constants.dart';
 
-class FloatingButtons extends StatelessWidget {
+class FloatingButtons extends StatefulWidget {
+  final bool isRecording;
+  final VoidCallback fnRecording;
+  final VoidCallback fnPlaying;
+
+  final bool isPlaying;
   const FloatingButtons({
     Key key,
+    this.isRecording,
+    this.isPlaying,
+    this.fnRecording,
+    this.fnPlaying,
   }) : super(key: key);
 
+  @override
+  _FloatingButtonsState createState() => _FloatingButtonsState();
+}
+
+class _FloatingButtonsState extends State<FloatingButtons> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -18,15 +31,15 @@ class FloatingButtons extends StatelessWidget {
           children: [
             RoundedButton(
               color: Color(0xFFFFFFFFF),
-              iconData: Icons.dashboard,
+              iconData: widget.isPlaying ? Icons.stop : Icons.play_arrow,
               onPressed: null,
               mini: true,
               bgColor: kSurfaceColor,
             ),
             RoundedButton(
               bgColor: kPrimaryColor,
-              iconData: Icons.brightness_1,
-              onPressed: null,
+              iconData: widget.isRecording ? Icons.stop : Icons.brightness_1,
+              onPressed: widget.fnRecording,
               mini: false,
               color: Color(0xFFFFFFFFF),
             ),

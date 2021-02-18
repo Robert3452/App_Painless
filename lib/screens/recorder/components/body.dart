@@ -1,21 +1,29 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:painless_app/constants.dart';
 import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
 import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
+import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
 import 'package:painless_app/screens/recorder/widgets/screen_recorder.dart';
+import 'package:painless_app/utils/app_utils.dart';
+import '../../../constants.dart';
 import '../widgets/floating_buttons.dart';
-import '../widgets/login_avatar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path_provider/path_provider.dart';
 // import '../../../size_config.dart';
 import '../../../bloc/post_logic.dart';
 import '../../../bloc/post_bloc.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:math';
 
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+
+typedef _Fn = void Function();
 
 class Body extends StatefulWidget {
   @override
@@ -37,13 +45,28 @@ class _BodyState extends State<Body> {
   List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
 
+  FlutterSoundPlayer _myPlayer = FlutterSoundPlayer();
+  FlutterSoundRecorder _myRecorder = FlutterSoundRecorder();
+  bool _myPlayerIsInited = false;
+  bool _myRecorderIsInited = false;
+  bool _myPlaybackReady = false;
+  String _mPath = "flutter_sound_example.mp3";
+
   @override
   void initState() {
-    super.initState();
     initSpeechState();
+    super.initState();
   }
 
   Future<void> initSpeechState() async {
+    var status = await Permission.storage.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('Storage permission not granted');
+    }
+    String folder = await AppUtil.createFolderInIntDocDir('Recorder');
+    var _file = new File('$folder/$_mPath');
+    _mPath = _file.path;
+
     var hasSpeech = await speech.initialize(
         onError: errorListener, onStatus: statusListener, debugLogging: true);
 
@@ -52,9 +75,32 @@ class _BodyState extends State<Body> {
       var systemLocale = await speech.systemLocale();
       _currentLocaleId = systemLocale.localeId;
     }
+
+    _myPlayer.openAudioSession().then((value) => setState(() {
+          _myPlayerIsInited = true;
+        }));
+
+    openTheRecorder().then((value) {
+      setState(() {
+        _myRecorderIsInited = true;
+      });
+    });
+
     setState(() {
       _hasSpeech = hasSpeech;
     });
+  }
+
+  Future<void> openTheRecorder() async {
+    if (!kIsWeb) {
+      var status = await Permission.microphone.request();
+      if (status != PermissionStatus.granted) {
+        throw RecordingPermissionException('Microphone permission not granted');
+      }
+    }
+
+    await _myRecorder.openAudioSession();
+    _myRecorderIsInited = true;
   }
 
   void resultListener(SpeechRecognitionResult result) {
@@ -63,13 +109,58 @@ class _BodyState extends State<Body> {
     _postBloc.add(DoPostEvent(sentence));
   }
 
+  void record() async {
+    _myRecorder.startRecorder(toFile: _mPath).then((value) => setState(() {}));
+  }
+
+  void stopRecorder() async {
+    await _myRecorder.stopRecorder().then((value) => {
+          setState(() {
+            _myPlaybackReady = true;
+          })
+        });
+  }
+
+  void play() async {
+    assert(_myPlayerIsInited &&
+        _myPlaybackReady &&
+        _myRecorder.isStopped &&
+        _myPlayer.isStopped);
+    _myPlayer
+        .startPlayer(
+            fromURI: _mPath,
+            whenFinished: () {
+              setState(() {});
+            })
+        .then((value) => {setState(() {})});
+  }
+
+  void stopPlayer() {
+    _myPlayer.stopPlayer().then((value) => setState(() {}));
+  }
+
+  _Fn getRecorderFn() {
+    if (!_myRecorderIsInited || !_myPlayer.isStopped) {
+      return null;
+    }
+    return _myRecorder.isStopped ? record : stopRecorder;
+  }
+
+  _Fn getPlayBackFn() {
+    print('_myPlayerIsInited: $_myPlayerIsInited,_myPlaybackReady:$_myPlaybackReady,_myRecorder.isStopped: ${_myRecorder.isStopped} ');
+    if (!_myPlayerIsInited || !_myPlaybackReady || !_myRecorder.isStopped) {
+      return null;
+    }
+    return _myPlayer.isStopped ? play : stopPlayer;
+  }
+
   void startListening() {
     lastWords = '';
     lastError = '';
     speech.listen(
         onResult: resultListener,
-        listenFor: Duration(seconds: 5),
-        pauseFor: Duration(seconds: 5),
+        listenFor: Duration(seconds: 10),
+        pauseFor: Duration(seconds: 10),
         partialResults: false,
         localeId: _currentLocaleId,
         onSoundLevelChange: soundLevelListener,
@@ -113,6 +204,10 @@ class _BodyState extends State<Body> {
 
   @override
   void dispose() {
+    _myPlayer.closeAudioSession();
+    _myPlayer = null;
+    _myRecorder.closeAudioSession();
+    _myRecorder = null;
     super.dispose();
   }
 
@@ -140,7 +235,39 @@ class _BodyState extends State<Body> {
                       startListening: startListening,
                       stopListening: cancelListening,
                     ),
-                    FloatingButtons()
+                    Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            RoundedButton(
+                              color: Color(0xFFFFFFFFF),
+                              iconData: _myPlayer.isPlaying
+                                  ? Icons.stop
+                                  : Icons.play_arrow,
+                              onPressed: getPlayBackFn(),
+                              mini: true,
+                              bgColor: kSurfaceColor,
+                            ),
+                            RoundedButton(
+                              bgColor: kPrimaryColor,
+                              iconData: _myRecorder.isRecording
+                                  ? Icons.stop
+                                  : Icons.brightness_1,
+                              onPressed: getRecorderFn(),
+                              mini: false,
+                              color: Color(0xFFFFFFFFF),
+                            ),
+                            RoundedButton(
+                              bgColor: kSurfaceColor,
+                              iconData: Icons.dehaze,
+                              onPressed: () {},
+                              mini: true,
+                              color: Color(0xFFFFFFFFF),
+                            ),
+                          ],
+                        ))
                   ],
                 );
               },
