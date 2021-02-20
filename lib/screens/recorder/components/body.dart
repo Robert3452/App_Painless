@@ -109,6 +109,54 @@ class _BodyState extends State<Body> {
     _postBloc.add(DoPostEvent(sentence));
   }
 
+  void soundLevelListener(double level) {
+    minSoundLevel = min(minSoundLevel, level);
+    maxSoundLevel = max(maxSoundLevel, level);
+    setState(() {
+      this.level = level;
+    });
+  }
+
+  void errorListener(SpeechRecognitionError error) {
+    setState(() {
+      lastError = '${error.errorMsg} - ${error.permanent}';
+    });
+  }
+
+  void statusListener(String status) {
+    setState(() {
+      lastStatus = '$status';
+    });
+  }
+
+  void startListening() {
+    lastWords = '';
+    lastError = '';
+    speech.listen(
+        onResult: resultListener,
+        listenFor: Duration(seconds: 5),
+        pauseFor: Duration(seconds: 5),
+        partialResults: false,
+        localeId: _currentLocaleId,
+        onSoundLevelChange: soundLevelListener,
+        cancelOnError: true,
+        listenMode: ListenMode.confirmation);
+  }
+
+  void stopListening() {
+    speech.stop();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
+  void cancelListening() {
+    speech.cancel();
+    setState(() {
+      level = 0.0;
+    });
+  }
+
   void record() async {
     _myRecorder.startRecorder(toFile: _mPath).then((value) => setState(() {}));
   }
@@ -140,6 +188,9 @@ class _BodyState extends State<Body> {
   }
 
   _Fn getRecorderFn() {
+    print(
+        '_myRecorderIsInited: $_myRecorderIsInited, _myPlayer.isStopped: ${_myPlayer.isStopped}');
+
     if (!_myRecorderIsInited || !_myPlayer.isStopped) {
       return null;
     }
@@ -147,64 +198,19 @@ class _BodyState extends State<Body> {
   }
 
   _Fn getPlayBackFn() {
-    print('_myPlayerIsInited: $_myPlayerIsInited,_myPlaybackReady:$_myPlaybackReady,_myRecorder.isStopped: ${_myRecorder.isStopped} ');
+    print(
+        '_myPlayerIsInited: $_myPlayerIsInited,_myPlaybackReady:$_myPlaybackReady,_myRecorder.isStopped: ${_myRecorder.isStopped} ');
     if (!_myPlayerIsInited || !_myPlaybackReady || !_myRecorder.isStopped) {
       return null;
     }
     return _myPlayer.isStopped ? play : stopPlayer;
   }
 
-  void startListening() {
-    lastWords = '';
-    lastError = '';
-    speech.listen(
-        onResult: resultListener,
-        listenFor: Duration(seconds: 10),
-        pauseFor: Duration(seconds: 10),
-        partialResults: false,
-        localeId: _currentLocaleId,
-        onSoundLevelChange: soundLevelListener,
-        cancelOnError: true,
-        listenMode: ListenMode.confirmation);
-  }
-
-  void stopListening() {
-    speech.stop();
-    setState(() {
-      level = 0.0;
-    });
-  }
-
-  void cancelListening() {
-    speech.cancel();
-    setState(() {
-      level = 0.0;
-    });
-  }
-
-  void soundLevelListener(double level) {
-    minSoundLevel = min(minSoundLevel, level);
-    maxSoundLevel = max(maxSoundLevel, level);
-    setState(() {
-      this.level = level;
-    });
-  }
-
-  void errorListener(SpeechRecognitionError error) {
-    setState(() {
-      lastError = '${error.errorMsg} - ${error.permanent}';
-    });
-  }
-
-  void statusListener(String status) {
-    setState(() {
-      lastStatus = '$status';
-    });
-  }
-
   @override
   void dispose() {
     _myPlayer.closeAudioSession();
+    speech.cancel();
+
     _myPlayer = null;
     _myRecorder.closeAudioSession();
     _myRecorder = null;
@@ -223,6 +229,9 @@ class _BodyState extends State<Body> {
               builder: (context, state) {
                 if (state is PostedBlocState) {
                   _isRecording = state.response["agressive"];
+                  if (_isRecording) {
+                    record();
+                  }
                 }
 
                 return Column(
@@ -236,38 +245,45 @@ class _BodyState extends State<Body> {
                       stopListening: cancelListening,
                     ),
                     Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            RoundedButton(
-                              color: Color(0xFFFFFFFFF),
-                              iconData: _myPlayer.isPlaying
-                                  ? Icons.stop
-                                  : Icons.play_arrow,
-                              onPressed: getPlayBackFn(),
-                              mini: true,
-                              bgColor: kSurfaceColor,
-                            ),
-                            RoundedButton(
-                              bgColor: kPrimaryColor,
-                              iconData: _myRecorder.isRecording
-                                  ? Icons.stop
-                                  : Icons.brightness_1,
-                              onPressed: getRecorderFn(),
-                              mini: false,
-                              color: Color(0xFFFFFFFFF),
-                            ),
-                            RoundedButton(
-                              bgColor: kSurfaceColor,
-                              iconData: Icons.dehaze,
-                              onPressed: () {},
-                              mini: true,
-                              color: Color(0xFFFFFFFFF),
-                            ),
-                          ],
-                        ))
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          RoundedButton(
+                            color: Color(0xFFFFFFFFF),
+                            iconData: _myPlayer.isPlaying
+                                ? Icons.stop
+                                : Icons.play_arrow,
+                            onPressed: () {}
+                            //  getPlayBackFn(),
+                            ,
+                            mini: true,
+                            bgColor: kSurfaceColor,
+                          ),
+                          RoundedButton(
+                            bgColor: kPrimaryColor,
+                            iconData: _myRecorder.isRecording
+                                ? Icons.stop
+                                : Icons.brightness_1,
+                            onPressed: !_myRecorderIsInited ||
+                                    !_myPlayer.isStopped &&
+                                        _myRecorder.isStopped
+                                ? record
+                                : stopRecorder,
+                            mini: false,
+                            color: Color(0xFFFFFFFFF),
+                          ),
+                          RoundedButton(
+                            bgColor: kSurfaceColor,
+                            iconData: Icons.dehaze,
+                            onPressed: () {},
+                            mini: true,
+                            color: Color(0xFFFFFFFFF),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 );
               },
