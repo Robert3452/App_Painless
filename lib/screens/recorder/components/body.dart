@@ -158,7 +158,10 @@ class _BodyState extends State<Body> {
   }
 
   void record() async {
-    _myRecorder.startRecorder(toFile: _mPath).then((value) => setState(() {}));
+    _myRecorder.startRecorder(toFile: _mPath).then((value) {
+      setState(() {});
+      print("Recording");
+    });
   }
 
   void stopRecorder() async {
@@ -188,8 +191,8 @@ class _BodyState extends State<Body> {
   }
 
   _Fn getRecorderFn() {
-    print(
-        '_myRecorderIsInited: $_myRecorderIsInited, _myPlayer.isStopped: ${_myPlayer.isStopped}');
+    // print(
+    //     '_myRecorderIsInited: $_myRecorderIsInited, _myPlayer.isStopped: ${_myPlayer.isStopped}');
 
     if (!_myRecorderIsInited || !_myPlayer.isStopped) {
       return null;
@@ -198,8 +201,8 @@ class _BodyState extends State<Body> {
   }
 
   _Fn getPlayBackFn() {
-    print(
-        '_myPlayerIsInited: $_myPlayerIsInited,_myPlaybackReady:$_myPlaybackReady,_myRecorder.isStopped: ${_myRecorder.isStopped} ');
+    // print(
+    //     '_myPlayerIsInited: $_myPlayerIsInited,_myPlaybackReady:$_myPlaybackReady,_myRecorder.isStopped: ${_myRecorder.isStopped} ');
     if (!_myPlayerIsInited || !_myPlaybackReady || !_myRecorder.isStopped) {
       return null;
     }
@@ -224,69 +227,68 @@ class _BodyState extends State<Body> {
       child: SafeArea(
         child: SizedBox(
             width: double.infinity,
-            child: BlocBuilder<PostBloc, PostState>(
+            child: BlocListener<PostBloc, PostState>(
               cubit: _postBloc,
-              builder: (context, state) {
+              listener: (context, state) {
                 if (state is PostedBlocState) {
-                  _isRecording = state.response["agressive"];
-                  if (_isRecording) {
+                  print("${state.response["agressive"]} offensive");
+                  if (state.response["agressive"]) {
+                    print('It\'s on!');
                     record();
                   }
                 }
-
-                return Column(
-                  children: [
-                    AppbarRecorder(),
-                    ScreenRecorder(isRecording: _isRecording),
-                    InitSpeechButton(
-                      hasSpeech: _hasSpeech,
-                      speech: speech,
-                      startListening: startListening,
-                      stopListening: cancelListening,
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          RoundedButton(
-                            color: Color(0xFFFFFFFFF),
-                            iconData: _myPlayer.isPlaying
-                                ? Icons.stop
-                                : Icons.play_arrow,
-                            onPressed: () {}
-                            //  getPlayBackFn(),
-                            ,
-                            mini: true,
-                            bgColor: kSurfaceColor,
-                          ),
-                          RoundedButton(
-                            bgColor: kPrimaryColor,
-                            iconData: _myRecorder.isRecording
-                                ? Icons.stop
-                                : Icons.brightness_1,
-                            onPressed: !_myRecorderIsInited ||
-                                    !_myPlayer.isStopped &&
-                                        _myRecorder.isStopped
-                                ? record
-                                : stopRecorder,
-                            mini: false,
-                            color: Color(0xFFFFFFFFF),
-                          ),
-                          RoundedButton(
-                            bgColor: kSurfaceColor,
-                            iconData: Icons.dehaze,
-                            onPressed: () {},
-                            mini: true,
-                            color: Color(0xFFFFFFFFF),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
               },
+              child: BlocBuilder<PostBloc, PostState>(
+                cubit: _postBloc,
+                builder: (context, state) {
+                  return Column(
+                    children: [
+                      AppbarRecorder(),
+                      ScreenRecorder(isRecording: _isRecording),
+                      InitSpeechButton(
+                        hasSpeech: _hasSpeech,
+                        speech: speech,
+                        startListening: startListening,
+                        stopListening: cancelListening,
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            RoundedButton(
+                              color: Color(0xFFFFFFFFF),
+                              iconData: _myPlayer.isPlaying
+                                  ? Icons.stop
+                                  : Icons.play_arrow,
+                              onPressed: getPlayBackFn(),
+                              mini: true,
+                              bgColor: kSurfaceColor,
+                            ),
+                            RoundedButton(
+                              bgColor: kPrimaryColor,
+                              iconData: _myRecorder.isRecording
+                                  ? Icons.stop
+                                  : Icons.brightness_1,
+                              onPressed: getRecorderFn(),
+                              mini: false,
+                              color: Color(0xFFFFFFFFF),
+                            ),
+                            RoundedButton(
+                              bgColor: kSurfaceColor,
+                              iconData: Icons.dehaze,
+                              onPressed: () {},
+                              mini: true,
+                              color: Color(0xFFFFFFFFF),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             )),
       ),
     );
