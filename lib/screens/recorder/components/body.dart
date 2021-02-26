@@ -8,11 +8,10 @@ import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
 import 'package:painless_app/screens/recorder/widgets/screen_recorder.dart';
 import 'package:painless_app/utils/app_utils.dart';
 import '../../../constants.dart';
-import '../widgets/floating_buttons.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:path_provider/path_provider.dart';
-// import '../../../size_config.dart';
 import '../../../bloc/api/post_logic.dart';
 import '../../../bloc/api/post_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,8 +30,10 @@ class Body extends StatefulWidget {
 }
 
 class _BodyState extends State<Body> {
+  final SpeechToText speech = SpeechToText();
   bool _hasSpeech = false;
   double level = 0.0;
+  StreamSubscription _recorderSubscription;
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
   String lastWords = '';
@@ -43,8 +44,8 @@ class _BodyState extends State<Body> {
   bool _isRecording = false;
   PostBloc _postBloc = PostBloc(logic: SimpleHttpLogic());
   List<LocaleName> _localeNames = [];
-  final SpeechToText speech = SpeechToText();
-
+  String _recorderTxt = "00:00:00";
+  double _dbLevel;
   FlutterSoundPlayer _myPlayer = FlutterSoundPlayer();
   FlutterSoundRecorder _myRecorder = FlutterSoundRecorder();
   bool _myPlayerIsInited = false;
@@ -89,6 +90,7 @@ class _BodyState extends State<Body> {
     setState(() {
       _hasSpeech = hasSpeech;
     });
+    await initializeDateFormatting();
   }
 
   Future<void> openTheRecorder() async {
@@ -100,6 +102,8 @@ class _BodyState extends State<Body> {
     }
 
     await _myRecorder.openAudioSession();
+    await _myRecorder.setSubscriptionDuration(Duration(milliseconds: 10));
+
     _myRecorderIsInited = true;
   }
 
@@ -162,11 +166,25 @@ class _BodyState extends State<Body> {
       setState(() {});
       print("Recording");
     });
+    _recorderSubscription = _myRecorder.onProgress.listen((event) {
+      if (event != null && event.duration != null) {
+        var date = DateTime.fromMillisecondsSinceEpoch(
+            event.duration.inMilliseconds,
+            isUtc: true);
+        var txt = DateFormat("mm:ss:SS", "es_US").format(date);
+        setState(() {
+          _recorderTxt = txt.substring(0, 8);
+          // print(_recorderTxt);
+          _dbLevel = event.decibels;
+        });
+      }
+    });
   }
 
   void stopRecorder() async {
     await _myRecorder.stopRecorder().then((value) => {
           setState(() {
+            _isRecording = false;
             _myPlaybackReady = true;
           })
         });
@@ -213,7 +231,6 @@ class _BodyState extends State<Body> {
   void dispose() {
     _myPlayer.closeAudioSession();
     speech.cancel();
-
     _myPlayer = null;
     _myRecorder.closeAudioSession();
     _myRecorder = null;
@@ -232,7 +249,10 @@ class _BodyState extends State<Body> {
               listener: (context, state) {
                 if (state is PostedBlocState) {
                   print("${state.response["agressive"]} offensive");
-                  if (state.response["agressive"]) {
+                  setState(() {
+                    _isRecording = state.response["agressive"];
+                  });
+                  if (_isRecording) {
                     print('It\'s on!');
                     record();
                   }
@@ -244,7 +264,10 @@ class _BodyState extends State<Body> {
                   return Column(
                     children: [
                       AppbarRecorder(),
-                      ScreenRecorder(isRecording: _isRecording),
+                      ScreenRecorder(
+                        isRecording: _isRecording,
+                        timer: _recorderTxt,
+                      ),
                       InitSpeechButton(
                         hasSpeech: _hasSpeech,
                         speech: speech,

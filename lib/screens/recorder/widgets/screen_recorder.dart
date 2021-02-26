@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../constants.dart';
 
 class ScreenRecorder extends StatelessWidget {
+  final String timer;
   const ScreenRecorder({
     Key key,
     @required bool isRecording,
+    this.timer,
   })  : _isRecording = isRecording,
         super(key: key);
 
@@ -22,7 +24,7 @@ class ScreenRecorder extends StatelessWidget {
           Padding(
             padding: EdgeInsets.symmetric(vertical: 5),
             child: Text(
-              "00:00:00",
+              timer,
               style: TextStyle(
                 color: kPrimaryLightColor,
                 fontSize: 50,
