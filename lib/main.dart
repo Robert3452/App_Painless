@@ -15,15 +15,13 @@ class MyApp extends StatelessWidget {
       title: 'Painless App',
       theme: ThemeData(
         scaffoldBackgroundColor: kBackgroundColor,
-        
         textTheme: TextTheme(
           bodyText1: TextStyle(color: kPrimaryColor),
           bodyText2: TextStyle(color: kPrimaryColor),
-
         ),
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home:Recorder(),
+      home: Recorder(),
     );
   }
 }
