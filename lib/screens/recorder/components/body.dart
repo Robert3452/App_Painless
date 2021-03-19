@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
+import 'package:painless_app/screens/recorder/widgets/floating_buttons.dart';
 import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
 import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
 import 'package:painless_app/screens/recorder/widgets/screen_recorder.dart';
+import 'package:painless_app/screens/register/register.dart';
 import 'package:painless_app/utils/app_utils.dart';
 import '../../../constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,7 +54,7 @@ class _BodyState extends State<Body> {
   bool _myRecorderIsInited = false;
   bool _myPlaybackReady = false;
   String _mPath = "flutter_sound_example.mp3";
-
+  String _pathFolder;
   @override
   void initState() {
     initSpeechState();
@@ -64,9 +66,7 @@ class _BodyState extends State<Body> {
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Storage permission not granted');
     }
-    String folder = await AppUtil.createFolderInIntDocDir('Recorder');
-    var _file = new File('$folder/$_mPath');
-    _mPath = _file.path;
+    _pathFolder = await AppUtil.createInternalDir('Recorder');
 
     var hasSpeech = await speech.initialize(
         onError: errorListener, onStatus: statusListener, debugLogging: true);
@@ -162,7 +162,8 @@ class _BodyState extends State<Body> {
   }
 
   void record() async {
-    _myRecorder.startRecorder(toFile: _mPath).then((value) {
+    String newFile = await AppUtil.createFile(_pathFolder);
+    _myRecorder.startRecorder(toFile: newFile).then((value) {
       setState(() {});
       print("Recording");
     });
@@ -174,7 +175,6 @@ class _BodyState extends State<Body> {
         var txt = DateFormat("mm:ss:SS", "es_US").format(date);
         setState(() {
           _recorderTxt = txt.substring(0, 8);
-          // print(_recorderTxt);
           _dbLevel = event.decibels;
         });
       }
@@ -185,6 +185,7 @@ class _BodyState extends State<Body> {
     await _myRecorder.stopRecorder().then((value) => {
           setState(() {
             _isRecording = false;
+            _recorderTxt = "00:00:00";
             _myPlaybackReady = true;
           })
         });
@@ -209,9 +210,6 @@ class _BodyState extends State<Body> {
   }
 
   _Fn getRecorderFn() {
-    // print(
-    //     '_myRecorderIsInited: $_myRecorderIsInited, _myPlayer.isStopped: ${_myPlayer.isStopped}');
-
     if (!_myRecorderIsInited || !_myPlayer.isStopped) {
       return null;
     }
@@ -219,8 +217,6 @@ class _BodyState extends State<Body> {
   }
 
   _Fn getPlayBackFn() {
-    // print(
-    //     '_myPlayerIsInited: $_myPlayerIsInited,_myPlaybackReady:$_myPlaybackReady,_myRecorder.isStopped: ${_myRecorder.isStopped} ');
     if (!_myPlayerIsInited || !_myPlaybackReady || !_myRecorder.isStopped) {
       return null;
     }
@@ -301,7 +297,9 @@ class _BodyState extends State<Body> {
                             RoundedButton(
                               bgColor: kSurfaceColor,
                               iconData: Icons.dehaze,
-                              onPressed: () {},
+                              onPressed: () {
+                                //  Navigator.pushNamed(context, Register.routeName);
+                              },
                               mini: true,
                               color: Color(0xFFFFFFFFF),
                             ),

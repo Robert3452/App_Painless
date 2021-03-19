@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:painless_app/constants.dart';
+import 'package:painless_app/routes.dart';
 import 'package:painless_app/screens/recorder/recorder.dart';
+import 'package:painless_app/theme.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,15 +15,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Painless App',
-      theme: ThemeData(
-        scaffoldBackgroundColor: kBackgroundColor,
-        textTheme: TextTheme(
-          bodyText1: TextStyle(color: kPrimaryColor),
-          bodyText2: TextStyle(color: kPrimaryColor),
-        ),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: Recorder(),
+      theme: theme(),
+      initialRoute: Recorder.routeName,
+      routes: routes,
     );
   }
 }

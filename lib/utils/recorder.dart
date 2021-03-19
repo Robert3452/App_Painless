@@ -41,7 +41,7 @@ class Recorder {
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Storage permission not granted');
     }
-    String folder = await AppUtil.createFolderInIntDocDir('Recorder');
+    String folder = await AppUtil.createInternalDir('Recorder');
     var file = File('$folder/$_mPath');
     _mPath = file.path;
 
