@@ -3,7 +3,7 @@ import '../../size_config.dart';
 import 'components/body.dart';
 
 class Recorder extends StatelessWidget {
-  static String routeName = "/recorder";
+  static String routeName = "/";
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
