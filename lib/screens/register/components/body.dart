@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:painless_app/constants.dart';
-import 'package:painless_app/screens/register/components/default_button.dart';
+import 'package:painless_app/widgets/default_button.dart';
 import 'package:painless_app/size_config.dart';
 
 class Body extends StatefulWidget {
@@ -10,6 +10,7 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   final _formKey = GlobalKey<FormState>();
+  String names;
   String email;
   String password;
   String confirm_password;
@@ -51,35 +52,29 @@ class _BodyState extends State<Body> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      height: SizeConfig.screenHeight * 0.04,
+                      height: SizeConfig.screenHeight * 0.05,
                     ),
                     Text(
                       "Regístrate",
                       style: TextStyle(
-                          fontSize: getProportionateScreenWidth(28),
+                          fontSize: getProportionateScreenWidth(34),
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           height: 1.5),
                     ),
-
-                    SizedBox(height: SizeConfig.screenHeight * 0.055),
+                    SizedBox(height: SizeConfig.screenHeight * 0.07),
                     buildNamesFormField(),
-
                     SizedBox(height: SizeConfig.screenHeight * 0.055),
                     buildEmailFormField(),
-
                     SizedBox(height: SizeConfig.screenHeight * 0.055),
                     builPasswordFormField(),
-
                     SizedBox(height: SizeConfig.screenHeight * 0.055),
                     builConfirmPasswordFormField(),
-
-                    SizedBox(height: SizeConfig.screenHeight * 0.055),
+                    SizedBox(height: SizeConfig.screenHeight * 0.08),
                     DefaultButton(
                       text: "Regístrate",
                       press: () {},
                     )
-                    //form,
                   ],
                 ),
               ),
@@ -108,7 +103,25 @@ class _BodyState extends State<Body> {
 
   TextFormField buildEmailFormField() {
     return TextFormField(
-      // onSaved: (newValue),
+      onSaved: (newValue) => email = newValue,
+      onChanged: (value) {
+        if (value.isNotEmpty) {
+          removeError(error: kEmailNullError);
+        } else if (emailValidatorRegExp.hasMatch(value)) {
+          removeError(error: kInvalidEmailError);
+        }
+        return null;
+      },
+      validator: (value) {
+        if (value.isEmpty) {
+          addError(error: kEmailNullError);
+          return "";
+        } else if (!emailValidatorRegExp.hasMatch(value)) {
+          addError(error: kInvalidEmailError);
+          return "";
+        }
+        return null;
+      },
       keyboardType: TextInputType.emailAddress,
       style: TextStyle(
         fontSize: 14,
@@ -126,7 +139,25 @@ class _BodyState extends State<Body> {
   TextFormField builPasswordFormField() {
     return TextFormField(
       obscureText: true,
-      // onSaved: (newValue),
+      onSaved: (newValue) => password = newValue,
+      onChanged: (value) {
+        if (value.isNotEmpty) {
+          removeError(error: kPassNullError);
+        } else if (value.length >= 8) {
+          removeError(error: kShortPassError);
+        }
+        password = value;
+      },
+      validator: (value) {
+        if (value.isEmpty) {
+          addError(error: kPassNullError);
+          return "";
+        } else if (value.length < 8) {
+          addError(error: kShortPassError);
+          return "";
+        }
+        return null;
+      },
       style: TextStyle(
         fontSize: 14,
         color: kPrimaryLightColor,
@@ -143,7 +174,25 @@ class _BodyState extends State<Body> {
   TextFormField builConfirmPasswordFormField() {
     return TextFormField(
       obscureText: true,
-      // onSaved: (newValue),
+      onSaved: (newValue) => confirm_password = newValue,
+      onChanged: (value) {
+        if (value.isNotEmpty) {
+          removeError(error: kPassNullError);
+        } else if (value.isNotEmpty && password == confirm_password) {
+          removeError(error: kMatchPassError);
+        }
+        confirm_password = value;
+      },
+      validator: (value) {
+        if (value.isEmpty) {
+          addError(error: kPassNullError);
+          return "";
+        } else if ((password != value)) {
+          addError(error: kMatchPassError);
+          return "";
+        }
+        return null;
+      },
       style: TextStyle(
         fontSize: 14,
         color: kPrimaryLightColor,

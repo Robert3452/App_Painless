@@ -16,9 +16,10 @@ class Register extends StatelessWidget {
             return IconButton(
                 icon: Icon(
                   Icons.chevron_left_outlined,
-                  color: kPrimaryLightColor,
                 ),
-                onPressed: () {});
+                onPressed: () {
+                  Navigator.pop(context);
+                });
           },
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:painless_app/screens/register/register.dart';
+import 'package:painless_app/screens/signin/signin.dart';
 import '../../../constants.dart';
 import 'login_avatar.dart';
 
@@ -18,7 +19,7 @@ class AppbarRecorder extends StatelessWidget {
           children: [
             MaterialButton(
               onPressed: () {
-                Navigator.pushNamed(context, Register.routeName);
+                Navigator.pushNamed(context, Signin.routeName);
               },
               color: kSurfaceColor,
               textColor: Colors.white,

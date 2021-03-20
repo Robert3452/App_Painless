@@ -15,6 +15,7 @@ ThemeData theme() {
 AppBarTheme appBarTheme() {
   return AppBarTheme(
     color: kPrimaryLightColor,
+    // backgroundColor: kBackgroundColor,
     elevation: 0,
     brightness: Brightness.dark,
     iconTheme: IconThemeData(color: kPrimaryLightColor),
@@ -50,7 +51,7 @@ InputDecorationTheme inputDecorationTheme() {
 
 TextTheme textTheme() {
   return TextTheme(
-    bodyText1: TextStyle(color: kPrimaryColor),
-    bodyText2: TextStyle(color: kPrimaryColor),
+    bodyText1: TextStyle(color: kPrimaryLightColor),
+    bodyText2: TextStyle(color: kPrimaryLightColor),
   );
 }
