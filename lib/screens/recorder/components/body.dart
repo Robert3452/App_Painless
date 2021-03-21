@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:painless_app/screens/record_files/record_files.dart';
 import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
 import 'package:painless_app/screens/recorder/widgets/floating_buttons.dart';
 import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
@@ -55,6 +56,7 @@ class _BodyState extends State<Body> {
   bool _myPlaybackReady = false;
   String _mPath = "flutter_sound_example.mp3";
   String _pathFolder;
+
   @override
   void initState() {
     initSpeechState();
@@ -239,78 +241,78 @@ class _BodyState extends State<Body> {
       create: (context) => PostBloc(logic: SimpleHttpLogic()),
       child: SafeArea(
         child: SizedBox(
-            width: double.infinity,
-            child: BlocListener<PostBloc, PostState>(
-              cubit: _postBloc,
-              listener: (context, state) {
-                if (state is PostedBlocState) {
-                  print("${state.response["agressive"]} offensive");
-                  setState(() {
-                    _isRecording = state.response["agressive"];
-                  });
-                  if (_isRecording) {
-                    print('It\'s on!');
-                    record();
-                  }
+          width: double.infinity,
+          child: BlocListener<PostBloc, PostState>(
+            cubit: _postBloc,
+            listener: (context, state) {
+              if (state is PostedBlocState) {
+                print("${state.response["agressive"]} offensive");
+                setState(() {
+                  _isRecording = state.response["agressive"];
+                });
+                if (_isRecording) {
+                  print('It\'s on!');
+                  record();
                 }
+              }
+            },
+            child: BlocBuilder<PostBloc, PostState>(
+              cubit: _postBloc,
+              builder: (context, state) {
+                return Column(
+                  children: [
+                    AppbarRecorder(),
+                    ScreenRecorder(
+                      isRecording: _isRecording,
+                      timer: _recorderTxt,
+                    ),
+                    InitSpeechButton(
+                      hasSpeech: _hasSpeech,
+                      speech: speech,
+                      startListening: startListening,
+                      stopListening: cancelListening,
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          RoundedButton(
+                            color: Color(0xFFFFFFFFF),
+                            iconData: Icons.dashboard,
+                            onPressed: null,
+                            mini: true,
+                            bgColor: kSurfaceColor,
+                          ),
+                          RoundedButton(
+                            bgColor: kPrimaryColor,
+                            iconData: _myRecorder.isRecording
+                                ? Icons.stop
+                                : Icons.brightness_1,
+                            onPressed: getRecorderFn(),
+                            mini: false,
+                            color: Color(0xFFFFFFFFF),
+                          ),
+                          RoundedButton(
+                            bgColor: kSurfaceColor,
+                            iconData: Icons.dehaze,
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                  context, RecordFiles.routeName);
+                            },
+                            mini: true,
+                            color: Color(0xFFFFFFFFF),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
               },
-              child: BlocBuilder<PostBloc, PostState>(
-                cubit: _postBloc,
-                builder: (context, state) {
-                  return Column(
-                    children: [
-                      AppbarRecorder(),
-                      ScreenRecorder(
-                        isRecording: _isRecording,
-                        timer: _recorderTxt,
-                      ),
-                      InitSpeechButton(
-                        hasSpeech: _hasSpeech,
-                        speech: speech,
-                        startListening: startListening,
-                        stopListening: cancelListening,
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            RoundedButton(
-                              color: Color(0xFFFFFFFFF),
-                              iconData: _myPlayer.isPlaying
-                                  ? Icons.stop
-                                  : Icons.play_arrow,
-                              onPressed: getPlayBackFn(),
-                              mini: true,
-                              bgColor: kSurfaceColor,
-                            ),
-                            RoundedButton(
-                              bgColor: kPrimaryColor,
-                              iconData: _myRecorder.isRecording
-                                  ? Icons.stop
-                                  : Icons.brightness_1,
-                              onPressed: getRecorderFn(),
-                              mini: false,
-                              color: Color(0xFFFFFFFFF),
-                            ),
-                            RoundedButton(
-                              bgColor: kSurfaceColor,
-                              iconData: Icons.dehaze,
-                              onPressed: () {
-                                //  Navigator.pushNamed(context, Register.routeName);
-                              },
-                              mini: true,
-                              color: Color(0xFFFFFFFFF),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            )),
+            ),
+          ),
+        ),
       ),
     );
   }
