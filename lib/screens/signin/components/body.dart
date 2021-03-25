@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:painless_app/screens/recorder/recorder.dart';
 import 'package:painless_app/screens/register/register.dart';
 import 'package:painless_app/size_config.dart';
 import 'package:painless_app/widgets/default_button.dart';
 import 'package:painless_app/widgets/social_button.dart';
+import 'package:painless_app/bloc/auth/auth_bloc.dart';
+import 'package:painless_app/bloc/auth/auth_logic.dart';
 
 import '../../../constants.dart';
 
@@ -13,7 +17,7 @@ class Body extends StatefulWidget {
 
 class _BodyState extends State<Body> {
   final _formKey = GlobalKey<FormState>();
-
+  final _authBloc = AuthBloc(authLogic: JWTAuth());
   String email;
 
   String password;
@@ -46,81 +50,96 @@ class _BodyState extends State<Body> {
             horizontal: getProportionateScreenWidth(20),
           ),
           child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: SizeConfig.screenHeight * 0.05,
-                  ),
-                  Text(
-                    "Inicia sesión",
-                    style: TextStyle(
-                        fontSize: getProportionateScreenWidth(34),
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.5),
-                  ),
-                  SizedBox(height: SizeConfig.screenHeight * 0.07),
-                  buildEmailFormField(),
-                  SizedBox(height: SizeConfig.screenHeight * 0.07),
-                  buildPasswordFormField(),
-                  SizedBox(height: SizeConfig.screenHeight * 0.03),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+            child: BlocProvider(
+              create: (context) => _authBloc,
+              child: BlocBuilder<AuthBloc, AuthState>(
+                cubit: _authBloc,
+                builder: (context, state) => Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      InkWell(
-                        onTap: () {},
-                        child: Text(
-                          "¿Contraseña olvidada?",
-                          style:
-                              TextStyle(fontSize: 14, color: kSecondaryColor),
-                        ),
+                      SizedBox(
+                        height: SizeConfig.screenHeight * 0.05,
+                      ),
+                      Text(
+                        "Inicia sesión",
+                        style: TextStyle(
+                            fontSize: getProportionateScreenWidth(34),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            height: 1.5),
+                      ),
+                      SizedBox(height: SizeConfig.screenHeight * 0.07),
+                      buildEmailFormField(),
+                      SizedBox(height: SizeConfig.screenHeight * 0.07),
+                      buildPasswordFormField(),
+                      SizedBox(height: SizeConfig.screenHeight * 0.03),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          InkWell(
+                            onTap: () {},
+                            child: Text(
+                              "¿Contraseña olvidada?",
+                              style: TextStyle(
+                                  fontSize: 14, color: kSecondaryColor),
+                            ),
+                          )
+                        ],
+                      ),
+                      SizedBox(height: SizeConfig.screenHeight * 0.03),
+                      DefaultButton(
+                        press: _doLogin,
+                        text: "Iniciar sesión",
+                      ),
+                      SizedBox(height: SizeConfig.screenHeight * 0.04),
+                      DefaultButton(
+                        press: () {
+                          Navigator.pushNamed(context, Register.routeName);
+                        },
+                        text: "Regístrate",
+                      ),
+                      SizedBox(height: SizeConfig.screenHeight * 0.02),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "O inicia sesión con:",
+                            style:
+                                TextStyle(fontSize: 14, color: kSecondaryColor),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: SizeConfig.screenHeight * 0.02),
+                      SocialButton(
+                        text: "Inicia sesión con Google",
+                        press: () {},
+                        uriImage: 'assets/icons/signinFacebook.png',
+                      ),
+                      SizedBox(height: SizeConfig.screenHeight * 0.04),
+                      SocialButton(
+                        text: "Inicia sesión con Facebook",
+                        press: () {},
+                        uriImage: 'assets/icons/signinGoogle.png',
                       )
                     ],
                   ),
-                  SizedBox(height: SizeConfig.screenHeight * 0.03),
-                  DefaultButton(
-                    press: () {},
-                    text: "Iniciar sesión",
-                  ),
-                  SizedBox(height: SizeConfig.screenHeight * 0.04),
-                  DefaultButton(
-                    press: () {
-                      Navigator.pushNamed(context, Register.routeName);
-                    },
-                    text: "Regístrate",
-                  ),
-                  SizedBox(height: SizeConfig.screenHeight * 0.02),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "O inicia sesión con:",
-                        style: TextStyle(fontSize: 14, color: kSecondaryColor),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: SizeConfig.screenHeight * 0.02),
-                  SocialButton(
-                    text: "Inicia sesión con Google",
-                    press: () {},
-                    uriImage: 'assets/icons/signinFacebook.png',
-                  ),
-                  SizedBox(height: SizeConfig.screenHeight * 0.04),
-                  SocialButton(
-                    text: "Inicia sesión con Facebook",
-                    press: () {},
-                    uriImage: 'assets/icons/signinGoogle.png',
-                  )
-                ],
+                ),
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  void _doLogin() {
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+    }
+    _authBloc.add(SignInJWT(email, password));
+    Navigator.pushNamed(context, Recorder.routeName);
   }
 
   TextFormField buildPasswordFormField() {
@@ -175,7 +194,7 @@ class _BodyState extends State<Body> {
         if (value.isEmpty) {
           addError(error: kEmailNullError);
           return "";
-        } else if (emailValidatorRegExp.hasMatch(value)) {
+        } else if (!emailValidatorRegExp.hasMatch(value)) {
           addError(error: kInvalidEmailError);
           return "";
         }

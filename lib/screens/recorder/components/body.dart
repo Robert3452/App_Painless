@@ -2,6 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:painless_app/bloc/auth/auth_bloc.dart';
+import 'package:painless_app/bloc/auth/auth_logic.dart';
+import 'package:painless_app/bloc/phrase/phrase_bloc.dart';
+import 'package:painless_app/bloc/phrase/phrase_logic.dart';
 import 'package:painless_app/screens/record_files/record_files.dart';
 import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
 import 'package:painless_app/screens/recorder/widgets/floating_buttons.dart';
@@ -36,6 +40,8 @@ class _BodyState extends State<Body> {
   final SpeechToText speech = SpeechToText();
   bool _hasSpeech = false;
   double level = 0.0;
+  String phrase = "";
+  bool signed = false;
   StreamSubscription _recorderSubscription;
   double minSoundLevel = 50000;
   double maxSoundLevel = -50000;
@@ -46,11 +52,15 @@ class _BodyState extends State<Body> {
   int resultListened = 0;
   bool _isRecording = false;
   PostBloc _postBloc = PostBloc(logic: SimpleHttpLogic());
+  AuthBloc _authBloc = AuthBloc(authLogic: JWTAuth());
+  PhraseBloc _phraseBloc = PhraseBloc(phraseLogic: HttpPhraseLogic());
+  bool created = false;
   List<LocaleName> _localeNames = [];
   String _recorderTxt = "00:00:00";
   double _dbLevel;
   FlutterSoundPlayer _myPlayer = FlutterSoundPlayer();
   FlutterSoundRecorder _myRecorder = FlutterSoundRecorder();
+
   bool _myPlayerIsInited = false;
   bool _myRecorderIsInited = false;
   bool _myPlaybackReady = false;
@@ -112,6 +122,9 @@ class _BodyState extends State<Body> {
   void resultListener(SpeechRecognitionResult result) {
     String sentence = result.recognizedWords;
     print('Result listened $sentence');
+    setState(() {
+      phrase = sentence;
+    });
     _postBloc.add(DoPostEvent(sentence));
   }
 
@@ -242,20 +255,48 @@ class _BodyState extends State<Body> {
       child: SafeArea(
         child: SizedBox(
           width: double.infinity,
-          child: BlocListener<PostBloc, PostState>(
-            cubit: _postBloc,
-            listener: (context, state) {
-              if (state is PostedBlocState) {
-                print("${state.response["agressive"]} offensive");
-                setState(() {
-                  _isRecording = state.response["agressive"];
-                });
-                if (_isRecording) {
-                  print('It\'s on!');
-                  record();
-                }
-              }
-            },
+          child: MultiBlocListener(
+            listeners: [
+              BlocListener(
+                  cubit: _phraseBloc,
+                  listener: (context, state) {
+                    if (state is PhraseCreated) {
+                      setState(() {
+                        created = true;
+                        print('phrase created');
+                      });
+                    }
+                  }),
+              BlocListener(
+                cubit: _authBloc,
+                listener: (context, state) {
+                  if (state is SignedUpJWT) {
+                    setState(() {
+                      signed = state.response['message'];
+                    });
+                  }
+                },
+              ),
+              BlocListener(
+                cubit: _postBloc,
+                listener: (context, state) {
+                  if (state is PostedBlocState) {
+                    print("${state.response["agressive"]} offensive");
+                    setState(() {
+                      _isRecording = state.response["agressive"];
+                    });
+                    _savePhrase();
+                    if (_isRecording) {
+                      print('It\'s on!');
+                      record();
+                      if (signed) {
+                        _savePhrase();
+                      }
+                    }
+                  }
+                },
+              )
+            ],
             child: BlocBuilder<PostBloc, PostState>(
               cubit: _postBloc,
               builder: (context, state) {
@@ -316,4 +357,14 @@ class _BodyState extends State<Body> {
       ),
     );
   }
+
+  void _savePhrase() {
+    DateTime now = DateTime.now();
+    _phraseBloc.add(AddPhrase(phrase, AppUtil.toDateString(now),
+        AppUtil.toHourString(now), _isRecording));
+  }
+//
+// void _savePhrase() {
+//   _authBloc.add()
+// }
 }
