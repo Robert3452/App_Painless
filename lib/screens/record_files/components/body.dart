@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:painless_app/constants.dart';
+import 'package:painless_app/screens/record_files/widgets/tile_item.dart';
 import 'package:painless_app/utils/app_utils.dart';
 import 'package:painless_app/size_config.dart';
 
@@ -92,7 +93,7 @@ class _ListViewFilesState extends State<ListViewFiles> {
                   ? ListView.builder(
                       itemCount: snapshot.data.length,
                       itemBuilder: (context, index) {
-                        return fileItem(
+                        return TileItem(
                             date: snapshot.data[index]["date"],
                             hour: snapshot.data[index]["time"],
                             nameFile: snapshot.data[index]["name"],
@@ -104,48 +105,13 @@ class _ListViewFilesState extends State<ListViewFiles> {
                       child: Text(
                         'Aún no hay grabaciones',
                         style: TextStyle(
-                            color: kPrimaryLightColor,
-                            fontSize: getProportionateScreenWidth(20)),
+                          color: kPrimaryLightColor,
+                          fontSize: getProportionateScreenWidth(20),
+                        ),
                       ),
                     );
           }
         },
-      ),
-    );
-  }
-
-  ListTile fileItem(
-      {String nameFile, String hour, String date, Function press, int id}) {
-    return ListTile(
-      title: Text(
-        nameFile,
-        style: TextStyle(color: kPrimaryLightColor),
-      ),
-      subtitle: Row(
-        children: [
-          //Hour text
-          SizedBox(
-            width: getProportionateScreenWidth(60),
-            child: Text(
-              hour,
-              style: TextStyle(color: kPrimaryLightColor),
-            ),
-          ),
-          //Date Text
-          Expanded(
-            child: Text(
-              date,
-              style: TextStyle(color: kPrimaryLightColor),
-            ),
-          ),
-        ],
-      ),
-      leading: FloatingActionButton(
-        heroTag: id,
-        onPressed: press,
-        backgroundColor: Color.fromARGB(50, 255, 255, 255),
-        mini: true,
-        child: Icon(Icons.play_arrow),
       ),
     );
   }

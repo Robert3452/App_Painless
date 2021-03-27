@@ -38,6 +38,7 @@ class JWTAuth extends AuthLogic {
     http.Response res =
         await http.post(uri, body: jsonEncode(body), headers: headers);
     print(res.body);
+    print(res.statusCode);
     if (res.statusCode != 200) {
       return {"message": false};
     } else {

@@ -12,7 +12,6 @@ import 'package:painless_app/screens/recorder/widgets/floating_buttons.dart';
 import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
 import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
 import 'package:painless_app/screens/recorder/widgets/screen_recorder.dart';
-import 'package:painless_app/screens/register/register.dart';
 import 'package:painless_app/utils/app_utils.dart';
 import '../../../constants.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,6 +22,8 @@ import '../../../bloc/api/post_logic.dart';
 import '../../../bloc/api/post_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
+
+// import '../../../widgets/toast.dart';
 import 'dart:math';
 
 import 'package:speech_to_text/speech_recognition_error.dart';
@@ -69,6 +70,7 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
+
     initSpeechState();
     super.initState();
   }
@@ -250,8 +252,11 @@ class _BodyState extends State<Body> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => PostBloc(logic: SimpleHttpLogic()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => PostBloc(logic: SimpleHttpLogic())),
+        BlocProvider(create: (context) => AuthBloc(authLogic: JWTAuth()))
+      ],
       child: SafeArea(
         child: SizedBox(
           width: double.infinity,
@@ -260,6 +265,7 @@ class _BodyState extends State<Body> {
               BlocListener(
                   cubit: _phraseBloc,
                   listener: (context, state) {
+                    print('hola bloc phrases');
                     if (state is PhraseCreated) {
                       setState(() {
                         created = true;
@@ -270,9 +276,17 @@ class _BodyState extends State<Body> {
               BlocListener(
                 cubit: _authBloc,
                 listener: (context, state) {
+                  print('hola bloc auth $signed');
+
                   if (state is SignedUpJWT) {
                     setState(() {
                       signed = state.response['message'];
+                    });
+                  }
+                  if (state is LoggedInJWT) {
+                    setState(() {
+                      signed = state.response['message'];
+                      print('signed $signed');
                     });
                   }
                 },
@@ -280,6 +294,7 @@ class _BodyState extends State<Body> {
               BlocListener(
                 cubit: _postBloc,
                 listener: (context, state) {
+                  print('hola bloc post aggression');
                   if (state is PostedBlocState) {
                     print("${state.response["agressive"]} offensive");
                     setState(() {

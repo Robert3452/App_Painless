@@ -23,8 +23,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           await authLogic.signIn(event.email, event.password);
       yield LoggedInJWT(response);
     } else if (event is SignUpJWT) {
-      Map<String, dynamic> response =
-          await authLogic.signUp(event.email, event.password, event.confirm_pwd, event.names, event.lastName);
+      Map<String, dynamic> response = await authLogic.signUp(event.email,
+          event.password, event.confirm_pwd, event.names, event.lastName);
       yield SignedUpJWT(response);
     } else if (event is LogoutJWT) {
       Map<String, dynamic> response = await authLogic.logout();
