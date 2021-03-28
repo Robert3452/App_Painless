@@ -70,7 +70,6 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
-
     initSpeechState();
     super.initState();
   }
@@ -376,10 +375,6 @@ class _BodyState extends State<Body> {
   void _savePhrase() {
     DateTime now = DateTime.now();
     _phraseBloc.add(AddPhrase(phrase, AppUtil.toDateString(now),
-        AppUtil.toHourString(now), _isRecording));
+        AppUtil.toHourString(now, ":"), _isRecording));
   }
-//
-// void _savePhrase() {
-//   _authBloc.add()
-// }
 }

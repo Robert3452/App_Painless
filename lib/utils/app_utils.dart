@@ -29,7 +29,7 @@ class AppUtil {
         var fileItem = {
           "path": file.path,
           "date": '${toDateString(created)}',
-          "time": '${toHourString(created)}',
+          "time": '${toHourString(created, ':')}',
           "name": basename(file.path)
         };
         listFiles.add(fileItem);
@@ -38,8 +38,8 @@ class AppUtil {
     return listFiles;
   }
 
-  static String toHourString(DateTime value) {
-    return '${twoDigitsString(value.hour)}:${twoDigitsString(value.minute)}:${twoDigitsString(value.second)}';
+  static String toHourString(DateTime value, String char) {
+    return '${twoDigitsString(value.hour)}$char${twoDigitsString(value.minute)}$char${twoDigitsString(value.second)}';
   }
 
   static twoDigitsString(int value) {
@@ -52,7 +52,7 @@ class AppUtil {
 
   static Future<String> createFile(String appPath) async {
     DateTime dateNow = DateTime.now();
-    String now = '${toDateString(dateNow)} ${toHourString(dateNow)}';
+    String now = '${toDateString(dateNow)}_${toHourString(dateNow, '')}';
     String newFile = "$appPath/$now.mp3";
     final File fileApp = File('$newFile');
     if (await fileApp.exists()) {
