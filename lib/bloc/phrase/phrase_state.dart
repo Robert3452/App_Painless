@@ -26,3 +26,12 @@ class PhraseCreated extends PhraseState {
   @override
   List<Object> get props => [response];
 }
+
+class PhraseException extends PhraseState {
+  final Map<String, dynamic> error;
+
+  PhraseException(this.error);
+
+  @override
+  List<Object> get props =>[];
+}

@@ -17,11 +17,10 @@ class HttpPhraseLogic extends PhraseLogic {
   FlutterSecureStorage storage = FlutterSecureStorage();
 
   @override
-  Future<Map<String, dynamic>> createPhrase(
-      {String phrase,
-      String dateClassified,
-      String time,
-      bool classifiedAs}) async {
+  Future<Map<String, dynamic>> createPhrase({String phrase,
+    String dateClassified,
+    String time,
+    bool classifiedAs}) async {
     String path = "/phrase";
     path = '$url$path';
     String token = "";
@@ -46,7 +45,7 @@ class HttpPhraseLogic extends PhraseLogic {
       "time": time
     };
     http.Response res =
-        await http.post(path, body: jsonEncode(body), headers: headers);
+    await http.post(path, body: jsonEncode(body), headers: headers);
     print(res.body);
     var bodyDecoded = jsonDecode(res.body);
     return {"message": bodyDecoded};
@@ -59,6 +58,7 @@ class HttpPhraseLogic extends PhraseLogic {
     String token = "";
     try {
       token = await storage.read(key: 'jwt');
+      print(token);
     } catch (e) {
       print('on error');
     }
@@ -67,7 +67,11 @@ class HttpPhraseLogic extends PhraseLogic {
       'Authorization': 'Bearer $token'
     };
     http.Response res = await http.get(path, headers: headers);
-    print(res.body);
-    return jsonDecode(res.body);
+    if (res.statusCode != 200)
+      throw ({
+        "message": "You're not logged yet",
+        "status_code": res.statusCode,
+      });
+    return List<Map<String, dynamic>>.from(json.decode(res.body));
   }
 }

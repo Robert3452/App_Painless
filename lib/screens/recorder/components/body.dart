@@ -8,6 +8,7 @@ import 'package:painless_app/bloc/phrase/phrase_bloc.dart';
 import 'package:painless_app/bloc/phrase/phrase_logic.dart';
 import 'package:painless_app/screens/record_files/record_files.dart';
 import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
+import 'package:painless_app/screens/recorder/widgets/dashboard.dart';
 import 'package:painless_app/screens/recorder/widgets/floating_buttons.dart';
 import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
 import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
@@ -42,6 +43,8 @@ class _BodyState extends State<Body> {
   bool _hasSpeech = false;
   double level = 0.0;
   String phrase = "";
+  bool showDashboard;
+
   bool signed = false;
   StreamSubscription _recorderSubscription;
   double minSoundLevel = 50000;
@@ -70,6 +73,7 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
+    showDashboard = false;
     initSpeechState();
     super.initState();
   }
@@ -246,6 +250,7 @@ class _BodyState extends State<Body> {
     _myPlayer = null;
     _myRecorder.closeAudioSession();
     _myRecorder = null;
+    showDashboard = false;
     super.dispose();
   }
 
@@ -254,7 +259,7 @@ class _BodyState extends State<Body> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => PostBloc(logic: SimpleHttpLogic())),
-        BlocProvider(create: (context) => AuthBloc(authLogic: JWTAuth()))
+        BlocProvider(create: (context) => AuthBloc(authLogic: JWTAuth())),
       ],
       child: SafeArea(
         child: SizedBox(
@@ -316,11 +321,15 @@ class _BodyState extends State<Body> {
               builder: (context, state) {
                 return Column(
                   children: [
-                    AppbarRecorder(),
-                    ScreenRecorder(
-                      isRecording: _isRecording,
-                      timer: _recorderTxt,
+                    AppbarRecorder(
+                      showDashboard: showDashboard,
                     ),
+                    showDashboard
+                        ? Dashboard()
+                        : ScreenRecorder(
+                            isRecording: _isRecording,
+                            timer: _recorderTxt,
+                          ),
                     InitSpeechButton(
                       hasSpeech: _hasSpeech,
                       speech: speech,
@@ -335,8 +344,13 @@ class _BodyState extends State<Body> {
                         children: [
                           RoundedButton(
                             color: Color(0xFFFFFFFFF),
-                            iconData: Icons.dashboard,
-                            onPressed: null,
+                            iconData:
+                                showDashboard ? Icons.home : Icons.dashboard,
+                            onPressed: () {
+                              setState(() {
+                                showDashboard = !showDashboard;
+                              });
+                            },
                             mini: true,
                             bgColor: kSurfaceColor,
                           ),
