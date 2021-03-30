@@ -16,13 +16,14 @@ class _DashboardState extends State<Dashboard> {
   List<Map<String, dynamic>> _phrases = [];
   List<Map<String, dynamic>> _posPhrases = [];
   List<Map<String, dynamic>> _negPhrases = [];
-
+  bool loading = true;
   int numbPositive;
   int numbNegative;
   PhraseBloc _phraseBloc = PhraseBloc(phraseLogic: HttpPhraseLogic());
 
   @override
   void initState() {
+    loading = true;
     super.initState();
     _phraseBloc.add(GetPhrase());
   }
@@ -73,6 +74,7 @@ class _DashboardState extends State<Dashboard> {
               }
               numbPositive = _posPhrases.length;
               numbNegative = _negPhrases.length;
+              loading = false;
             });
           }
           if (state is PhraseException) {
@@ -81,21 +83,23 @@ class _DashboardState extends State<Dashboard> {
         },
         child: Expanded(
           flex: 3,
-          child: Column(
-            children: [
-              DashboardItem(
-                type: false,
-                qty: numbNegative,
-                phrase: _negPhrases,
-              ),
-              SizedBox(height: SizeConfig.screenHeight * 0.03),
-              DashboardItem(
-                type: true,
-                qty: numbPositive,
-                phrase: _posPhrases,
-              ),
-            ],
-          ),
+          child: loading
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    DashboardItem(
+                      type: false,
+                      qty: numbNegative,
+                      phrase: _negPhrases,
+                    ),
+                    SizedBox(height: SizeConfig.screenHeight * 0.03),
+                    DashboardItem(
+                      type: true,
+                      qty: numbPositive,
+                      phrase: _posPhrases,
+                    ),
+                  ],
+                ),
         ),
       ),
     );
