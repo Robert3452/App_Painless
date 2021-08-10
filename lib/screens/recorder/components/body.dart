@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:painless_app/bloc/auth/auth_bloc.dart';
 import 'package:painless_app/bloc/auth/auth_logic.dart';
 import 'package:painless_app/bloc/phrase/phrase_bloc.dart';
@@ -80,6 +81,12 @@ class _BodyState extends State<Body> {
 
   Future<void> initSpeechState() async {
     var status = await Permission.storage.request();
+    var locationStatus = await Permission.locationWhenInUse.request();
+
+    if(locationStatus != PermissionStatus.granted){
+      throw "Location not granted";
+    }
+
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('Storage permission not granted');
     }
@@ -183,9 +190,12 @@ class _BodyState extends State<Body> {
 
   void record() async {
     String newFile = await AppUtil.createFile(_pathFolder);
+    print(newFile);
     _myRecorder.startRecorder(toFile: newFile).then((value) {
       setState(() {});
       print("Recording");
+    }).catchError((onError){
+      print(onError);
     });
     _recorderSubscription = _myRecorder.onProgress.listen((event) {
       if (event != null && event.duration != null) {
@@ -267,7 +277,7 @@ class _BodyState extends State<Body> {
           child: MultiBlocListener(
             listeners: [
               BlocListener(
-                  cubit: _phraseBloc,
+                  bloc: _phraseBloc,
                   listener: (context, state) {
                     print('hola bloc phrases');
                     if (state is PhraseCreated) {
@@ -278,7 +288,7 @@ class _BodyState extends State<Body> {
                     }
                   }),
               BlocListener(
-                cubit: _authBloc,
+                bloc: _authBloc,
                 listener: (context, state) {
                   print('hola bloc auth $signed');
 
@@ -296,7 +306,8 @@ class _BodyState extends State<Body> {
                 },
               ),
               BlocListener(
-                cubit: _postBloc,
+
+                bloc: _postBloc,
                 listener: (context, state) {
                   print('hola bloc post aggression');
                   if (state is PostedBlocState) {
@@ -317,7 +328,7 @@ class _BodyState extends State<Body> {
               )
             ],
             child: BlocBuilder<PostBloc, PostState>(
-              cubit: _postBloc,
+              bloc: _postBloc,
               builder: (context, state) {
                 return Column(
                   children: [

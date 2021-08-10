@@ -20,7 +20,7 @@ class PostBloc extends Bloc<PostEvent, PostState> {
     if (event is DoPostEvent) {
       yield PostBlocState();
       try {
-        var response = await logic.postAggression(event.sentence);
+        var response = await logic.sendAggression(event.sentence);
         yield PostedBlocState(response);
       } on HttpException {
         yield PostErrorState(

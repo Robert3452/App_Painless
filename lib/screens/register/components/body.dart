@@ -55,7 +55,7 @@ class _BodyState extends State<Body> {
             child: BlocProvider(
               create: (context) => _authBloc,
               child: BlocListener(
-                cubit: _authBloc,
+                bloc: _authBloc,
                 listener: (context, state) {
                   if (state is SignedUpJWT) {
                     print(state.response);
@@ -66,7 +66,7 @@ class _BodyState extends State<Body> {
                   }
                 },
                 child: BlocBuilder(
-                  cubit: _authBloc,
+                  bloc: _authBloc,
                   builder: (context, state) => Form(
                     key: _formKey,
                     child: Padding(

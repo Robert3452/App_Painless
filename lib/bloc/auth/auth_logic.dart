@@ -1,6 +1,9 @@
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:painless_app/envVariables.dart';
 
 abstract class AuthLogic {
   Future<Map<String, dynamic>> signUp(String email, String password,
@@ -14,40 +17,49 @@ abstract class AuthLogic {
 class SignInException implements Exception {}
 
 class JWTAuth extends AuthLogic {
-  String url = 'https://painless-v2.herokuapp.com';
+  String url = "${envVars.URL_TS}/api/profile";
 
-  // String url = 'http://192.168.88.5:5000';
-  FlutterSecureStorage storage = FlutterSecureStorage();
+  SharedPreferences storage;
+
+  initInstance() async {
+    storage = await SharedPreferences.getInstance();
+  }
+
+  JWTAuth() {
+    initInstance();
+  }
 
   @override
   Future<Map<String, dynamic>> logout() async {
-    await this.storage.delete(key: "jwt");
+    storage = await SharedPreferences.getInstance();
+    await storage.remove("jwt");
     return {"message": true};
   }
 
   @override
   Future<Map<String, dynamic>> signIn(String email, String password) async {
     String path = '/signin';
-    String uri = '$url$path';
-    print(uri);
-    Map<String, String> headers = {"Content-type": "application/json"};
-    Map<String, String> body = {
-      "username": email,
-      "password": password,
+    storage = await SharedPreferences.getInstance();
+    String uri = '${envVars.URL_TS}/api/profile$path';
+    String basicAuth = 'Basic ' + base64Encode(utf8.encode('$email:$password'));
+    print(basicAuth);
+    Map<String, String> headers = {
+      "Accept": "application/json",
+      "Content-type": "application/json",
+      "authorization": basicAuth
     };
-    http.Response res =
-        await http.post(uri, body: jsonEncode(body), headers: headers);
+    http.Response res = await http.post(Uri.parse(uri), headers: headers);
     print(res.body);
     print(res.statusCode);
     if (res.statusCode != 200) {
       return {"message": false};
     } else {
       Map<String, dynamic> responseBody = jsonDecode(res.body);
-      if (await storage.read(key: "jwt") == null) {
-        print(storage.read(key: "jwt"));
-        await storage.delete(key: "jwt");
+      if (storage.getString("jwt") != null) {
+        print(storage.getString("jwt"));
+        storage.remove("jwt");
       }
-      await this.storage.write(key: "jwt", value: responseBody['access_token']);
+      await storage.setString("jwt", responseBody['token']);
       return {"message": true};
     }
   }
@@ -55,8 +67,9 @@ class JWTAuth extends AuthLogic {
   @override
   Future<Map<String, dynamic>> signUp(String email, String password,
       String confirm_pwd, String names, String lastName) async {
+    storage = await SharedPreferences.getInstance();
     String path = '/signup';
-    String uri = '$url$path';
+    String uri = '${envVars.URL_TS}/api/profile$path';
     Map<String, String> headers = {"Content-type": "application/json"};
     Map<String, String> body = {
       "email": email,
@@ -65,8 +78,8 @@ class JWTAuth extends AuthLogic {
       "lastname": lastName,
       "confirm_pwd": confirm_pwd
     };
-    http.Response res =
-        await http.post(uri, body: jsonEncode(body), headers: headers);
+    http.Response res = await http.post(Uri.parse(uri),
+        body: jsonEncode(body), headers: headers);
     print(res.statusCode);
     if (res.statusCode != 200) {
       return {"message": false};

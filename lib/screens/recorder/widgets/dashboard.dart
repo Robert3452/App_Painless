@@ -61,7 +61,7 @@ class _DashboardState extends State<Dashboard> {
     return BlocProvider(
       create: (context) => PhraseBloc(phraseLogic: HttpPhraseLogic()),
       child: BlocListener(
-        cubit: _phraseBloc,
+        bloc: _phraseBloc,
         listener: (context, state) {
           if (state is GotPhrases) {
             setState(() {
@@ -163,7 +163,7 @@ class DashboardItem extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(25),
-              color: kbtnRed,
+              color: kBtnRed,
             ),
           ),
         ),

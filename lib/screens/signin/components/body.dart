@@ -77,6 +77,8 @@ class _BodyState extends State<Body> {
   @override
   void initState() {
     super.initState();
+    email = "";
+    password = "";
   }
 
   void removeError({String error}) {
@@ -100,14 +102,14 @@ class _BodyState extends State<Body> {
             child: BlocProvider(
               create: (context) => _authBloc,
               child: BlocListener(
-                cubit: _authBloc,
+                bloc: _authBloc,
                 listener: (context, state) {
                   if (state is LoggedInJWT) {
                     toggleAdvice(loggedIn: state.response['message']);
                   }
                 },
                 child: BlocBuilder<AuthBloc, AuthState>(
-                  cubit: _authBloc,
+                  bloc: _authBloc,
                   builder: (context, state) => Form(
                     key: _formKey,
                     child: Column(
@@ -192,8 +194,8 @@ class _BodyState extends State<Body> {
   void _doLogin() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
+      _authBloc.add(SignInJWT(email, password));
     }
-    _authBloc.add(SignInJWT(email, password));
   }
 
   TextFormField buildPasswordFormField() {
@@ -228,14 +230,18 @@ class _BodyState extends State<Body> {
         }
         return null;
       },
-      onSaved: (value) => password = value,
+      onSaved: (value) {
+        password = value;
+      },
     );
   }
 
   TextFormField buildEmailFormField() {
     return TextFormField(
       keyboardType: TextInputType.emailAddress,
-      onSaved: (newValue) => email = newValue,
+      onSaved: (newValue) {
+        email = newValue;
+      },
       onChanged: (value) {
         if (value.isNotEmpty) {
           removeError(error: kEmailNullError);
@@ -252,6 +258,7 @@ class _BodyState extends State<Body> {
           addError(error: kInvalidEmailError);
           return "";
         }
+
         return null;
       },
       style: TextStyle(

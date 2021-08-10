@@ -1,6 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:painless_app/envVariables.dart';
+import 'package:geolocator/geolocator.dart';
 
 abstract class PhraseLogic {
   Future<List<Map<String, dynamic>>> getPhrases();
@@ -12,52 +14,73 @@ abstract class PhraseLogic {
 class PhraseRequestException implements Exception {}
 
 class HttpPhraseLogic extends PhraseLogic {
-  String url = 'https://painless-v2.herokuapp.com';
+  String url = "${envVars.URL_TS}/api";
 
-  FlutterSecureStorage storage = FlutterSecureStorage();
+  SharedPreferences storage;
+
+  initInstance() async {
+    storage = await SharedPreferences.getInstance();
+  }
+
+  HttpPhraseLogic() {
+    initInstance();
+  }
 
   @override
-  Future<Map<String, dynamic>> createPhrase({String phrase,
-    String dateClassified,
-    String time,
-    bool classifiedAs}) async {
+  Future<Map<String, dynamic>> createPhrase(
+      {String phrase,
+      String dateClassified,
+      String time,
+      bool classifiedAs}) async {
+    storage = await SharedPreferences.getInstance();
     String path = "/phrase";
-    path = '$url$path';
+    final GeolocatorPlatform _geoLocationPlatform = GeolocatorPlatform.instance;
+    var position = await _geoLocationPlatform.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    path = '${envVars.URL_TS}/api$path';
+    print(path);
     String token = "";
     try {
-      token = await storage.read(key: 'jwt');
+      token = storage.getString("jwt");
+      print("token $token");
+      if (token == null) {
+        throw ("no hay token");
+      }
+      Map<String, String> headers = {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer $token'
+      };
+      Map<String, dynamic> body = {
+        "phrase": phrase,
+        "classified_as": classifiedAs,
+        "date_classified": dateClassified,
+        "time": time,
+        "longitude": position.longitude,
+        "latitude": position.latitude
+      };
+      http.Response res = await http.post(Uri.parse(path),
+          body: jsonEncode(body), headers: headers);
+      print(res.body);
+      var bodyDecoded = jsonDecode(res.body);
+      return {"message": bodyDecoded};
     } catch (e) {
-      // print('No se guardó $e');
+      print(e);
       return {
+        "error": e,
         "message": "no se guardó, no se inició sesión",
         "saved": false,
       };
     }
-    // print(token);
-    Map<String, String> headers = {
-      'Content-type': 'application/json',
-      'Authorization': 'Bearer $token'
-    };
-    Map<String, dynamic> body = {
-      "phrase": phrase,
-      "classified_as": classifiedAs,
-      "date_classified": dateClassified,
-      "time": time
-    };
-    http.Response res =
-    await http.post(path, body: jsonEncode(body), headers: headers);
-    print(res.body);
-    var bodyDecoded = jsonDecode(res.body);
-    return {"message": bodyDecoded};
   }
 
   @override
   Future<List<Map<String, dynamic>>> getPhrases() async {
     String path = "/phrases";
-    path = '$url$path';
+    path = '${envVars.URL_TS}/api$path';
     String token = "";
     try {
-      token = await storage.read(key: 'jwt');
+      storage = await SharedPreferences.getInstance();
+      token = storage.getString('jwt');
       print(token);
     } catch (e) {
       print('on error');
@@ -66,7 +89,7 @@ class HttpPhraseLogic extends PhraseLogic {
       'Content-type': 'application/json',
       'Authorization': 'Bearer $token'
     };
-    http.Response res = await http.get(path, headers: headers);
+    http.Response res = await http.get(Uri.parse(path), headers: headers);
     if (res.statusCode != 200)
       throw ({
         "message": "You're not logged yet",

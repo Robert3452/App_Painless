@@ -53,7 +53,7 @@ class AppUtil {
   static Future<String> createFile(String appPath) async {
     DateTime dateNow = DateTime.now();
     String now = '${toDateString(dateNow)}_${toHourString(dateNow, '')}';
-    String newFile = "$appPath/$now.mp3";
+    String newFile = "$appPath$now.wav";
     final File fileApp = File('$newFile');
     if (await fileApp.exists()) {
       return fileApp.path;
