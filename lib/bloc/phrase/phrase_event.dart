@@ -4,7 +4,7 @@ abstract class PhraseEvent extends Equatable {
   const PhraseEvent();
 }
 
-class GetPhrase extends PhraseEvent {
+class GetPhrases extends PhraseEvent {
   @override
   List<Object> get props => [];
 }

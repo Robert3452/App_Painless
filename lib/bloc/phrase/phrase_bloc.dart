@@ -18,9 +18,11 @@ class PhraseBloc extends Bloc<PhraseEvent, PhraseState> {
   Stream<PhraseState> mapEventToState(
     PhraseEvent event,
   ) async* {
-    if (event is GetPhrase) {
+    if (event is GetPhrases) {
       try {
-        List<Map<String, dynamic>> response = await phraseLogic.getPhrases();
+        var c =await phraseLogic.getPhrases();
+        print(c);
+        List<Map<String, dynamic>> response = c;
         yield GotPhrases(response);
       } catch (error) {
         yield PhraseException(error);

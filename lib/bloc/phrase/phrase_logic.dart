@@ -32,17 +32,16 @@ class HttpPhraseLogic extends PhraseLogic {
       String dateClassified,
       String time,
       bool classifiedAs}) async {
-    storage = await SharedPreferences.getInstance();
-    String path = "/phrase";
-    final GeolocatorPlatform _geoLocationPlatform = GeolocatorPlatform.instance;
-    var position = await _geoLocationPlatform.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    path = '${envVars.URL_TS}/api$path';
-    print(path);
-    String token = "";
     try {
+      storage = await SharedPreferences.getInstance();
+      String path = "/phrase";
+      final GeolocatorPlatform _geoLocationPlatform =
+          GeolocatorPlatform.instance;
+      var position = await _geoLocationPlatform.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      path = '${envVars.URL_TS}/api$path';
+      String token = "";
       token = storage.getString("jwt");
-      print("token $token");
       if (token == null) {
         throw ("no hay token");
       }
@@ -60,7 +59,6 @@ class HttpPhraseLogic extends PhraseLogic {
       };
       http.Response res = await http.post(Uri.parse(path),
           body: jsonEncode(body), headers: headers);
-      print(res.body);
       var bodyDecoded = jsonDecode(res.body);
       return {"message": bodyDecoded};
     } catch (e) {
@@ -75,26 +73,35 @@ class HttpPhraseLogic extends PhraseLogic {
 
   @override
   Future<List<Map<String, dynamic>>> getPhrases() async {
-    String path = "/phrases";
-    path = '${envVars.URL_TS}/api$path';
-    String token = "";
     try {
+      String path = "/phrase";
+      path = '${envVars.URL_TS}/api$path';
+      String token = "";
       storage = await SharedPreferences.getInstance();
       token = storage.getString('jwt');
-      print(token);
-    } catch (e) {
-      print('on error');
+      if (token == null) {
+        throw ({
+          "error": "There was an error",
+          "message": "Unauthorized",
+          "status_code": "401",
+        });
+      }
+      Map<String, String> headers = {
+        'Content-type': 'application/json',
+        'Authorization': 'Bearer $token'
+      };
+      http.Response res = await http.get(Uri.parse(path), headers: headers);
+      if (res.statusCode != 200) {
+        final message = json.decode(res.body)['message'];
+        throw ({
+          "error": "There was an error",
+          "message": message,
+          "status_code": "${res.statusCode}",
+        });
+      }
+      return List<Map<String, dynamic>>.from(json.decode(res.body)["message"]);
+    }catch(error){
+      throw error;
     }
-    Map<String, String> headers = {
-      'Content-type': 'application/json',
-      'Authorization': 'Bearer $token'
-    };
-    http.Response res = await http.get(Uri.parse(path), headers: headers);
-    if (res.statusCode != 200)
-      throw ({
-        "message": "You're not logged yet",
-        "status_code": res.statusCode,
-      });
-    return List<Map<String, dynamic>>.from(json.decode(res.body));
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:painless_app/bloc/phrase/phrase_bloc.dart';
 import 'package:painless_app/bloc/phrase/phrase_logic.dart';
 import 'package:painless_app/constants.dart';
-import 'package:painless_app/screens/register/register.dart';
 import 'package:painless_app/screens/signin/signin.dart';
 import 'package:painless_app/size_config.dart';
 
@@ -25,13 +24,13 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     loading = true;
     super.initState();
-    _phraseBloc.add(GetPhrase());
+    _phraseBloc.add(GetPhrases());
   }
 
-  void toggleAdvice() {
-    String message = "Debe inicar sesión primero";
-    String title = "Inicie sesión";
-
+  void toggleAdvice(
+      {String message = "Debe inicar sesión primero",
+      String title = "Inicie sesión",
+      String status = "401"}) {
     List<Widget> signInAdvice = [
       TextButton(
         onPressed: () {
@@ -50,7 +49,7 @@ class _DashboardState extends State<Dashboard> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: Text(message),
+        content: Text("$status: $message"),
         actions: signInAdvice,
       ),
     );
@@ -78,7 +77,11 @@ class _DashboardState extends State<Dashboard> {
             });
           }
           if (state is PhraseException) {
-            toggleAdvice();
+            print(state.error);
+            toggleAdvice(
+                message: state.error['message'],
+                title: state.error['error'],
+                status: state.error['status_code']);
           }
         },
         child: Expanded(

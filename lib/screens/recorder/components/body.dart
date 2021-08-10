@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:painless_app/bloc/auth/auth_bloc.dart';
 import 'package:painless_app/bloc/auth/auth_logic.dart';
 import 'package:painless_app/bloc/phrase/phrase_bloc.dart';
@@ -10,7 +7,6 @@ import 'package:painless_app/bloc/phrase/phrase_logic.dart';
 import 'package:painless_app/screens/record_files/record_files.dart';
 import 'package:painless_app/screens/recorder/widgets/appbar_recorder.dart';
 import 'package:painless_app/screens/recorder/widgets/dashboard.dart';
-import 'package:painless_app/screens/recorder/widgets/floating_buttons.dart';
 import 'package:painless_app/screens/recorder/widgets/init_speech_button.dart';
 import 'package:painless_app/screens/recorder/widgets/rounded_button.dart';
 import 'package:painless_app/screens/recorder/widgets/screen_recorder.dart';
@@ -24,8 +20,6 @@ import '../../../bloc/api/post_logic.dart';
 import '../../../bloc/api/post_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
-
-// import '../../../widgets/toast.dart';
 import 'dart:math';
 
 import 'package:speech_to_text/speech_recognition_error.dart';
@@ -279,18 +273,15 @@ class _BodyState extends State<Body> {
               BlocListener(
                   bloc: _phraseBloc,
                   listener: (context, state) {
-                    print('hola bloc phrases');
                     if (state is PhraseCreated) {
                       setState(() {
                         created = true;
-                        print('phrase created');
                       });
                     }
                   }),
               BlocListener(
                 bloc: _authBloc,
                 listener: (context, state) {
-                  print('hola bloc auth $signed');
 
                   if (state is SignedUpJWT) {
                     setState(() {
@@ -300,7 +291,6 @@ class _BodyState extends State<Body> {
                   if (state is LoggedInJWT) {
                     setState(() {
                       signed = state.response['message'];
-                      print('signed $signed');
                     });
                   }
                 },
@@ -317,7 +307,7 @@ class _BodyState extends State<Body> {
                     });
                     _savePhrase();
                     if (_isRecording) {
-                      print('It\'s on!');
+                      print('It\'s recording!');
                       record();
                       if (signed) {
                         _savePhrase();
