@@ -35,6 +35,7 @@ class _TileItemState extends State<TileItem> {
   FlutterSoundPlayer _myPlayer = FlutterSoundPlayer();
   bool _myPlayerIsInitiated = false;
   bool _myPlaybackReady = false;
+  bool _myPlaybackFinished = false;
 
   @override
   void initState() {
@@ -56,7 +57,9 @@ class _TileItemState extends State<TileItem> {
 
   Future<void> play() async {
     assert(_myPlayerIsInitiated && _myPlaybackReady);
-    await _myPlayer.startPlayer(fromURI: widget.path);
+    await _myPlayer.startPlayer(fromURI: widget.path, whenFinished: () {
+      togglePlayer();
+    });
     togglePlayer();
   }
 
@@ -72,7 +75,6 @@ class _TileItemState extends State<TileItem> {
   }
 
   _Fn getPlayBackFn() {
-    print(_myPlayer.isStopped);
     if (!_myPlayerIsInitiated || !_myPlaybackReady) {
       return null;
     }
@@ -81,6 +83,7 @@ class _TileItemState extends State<TileItem> {
 
   @override
   void dispose() {
+    _myPlayer.stopPlayer();
     super.dispose();
   }
 
