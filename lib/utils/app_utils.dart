@@ -3,17 +3,24 @@ import 'package:path/path.dart';
 
 class AppUtil {
   static Future<String> createInternalDir(String folderName) async {
-    final String rootPath = '/storage/emulated/0';
-    final Directory _internalDir = Directory(rootPath);
-    final Directory _appInternalDirectory =
-        Directory('${_internalDir.path}/$folderName/');
+    try {
+      final String rootPath = '/storage/emulated/0';
+      final Directory _internalDir = Directory(rootPath);
 
-    if (await _appInternalDirectory.exists()) {
-      return _appInternalDirectory.path;
-    } else {
-      final Directory _appNewFolder =
-          await _appInternalDirectory.create(recursive: true);
-      return _appNewFolder.path;
+      final Directory _appInternalDirectory =
+          Directory('${_internalDir.path}/$folderName');
+
+      if (await _appInternalDirectory.exists()) {
+        print("existe $_appInternalDirectory");
+        return _appInternalDirectory.path;
+      } else {
+        print("no existe $_appInternalDirectory");
+        final Directory _appNewFolder =
+            await _appInternalDirectory.create(recursive: false);
+        return _appNewFolder.path;
+      }
+    } catch (error) {
+      print("error $error");
     }
   }
 
@@ -23,7 +30,7 @@ class AppUtil {
     List<FileSystemEntity> files;
     List<Map<String, dynamic>> listFiles = [];
     if (await dir.exists()) {
-      files = Directory('$rootPath/').listSync(recursive: false);
+      files = Directory('$rootPath/').listSync(recursive: true);
       for (FileSystemEntity file in files) {
         var created = file.statSync().changed;
         var fileItem = {
@@ -51,15 +58,22 @@ class AppUtil {
   }
 
   static Future<String> createFile(String appPath) async {
-    DateTime dateNow = DateTime.now();
-    String now = '${toDateString(dateNow)}_${toHourString(dateNow, '')}';
-    String newFile = "$appPath$now.wav";
-    final File fileApp = File('$newFile');
-    if (await fileApp.exists()) {
-      return fileApp.path;
-    } else {
-      await fileApp.create(recursive: true);
-      return fileApp.path;
+    try {
+      DateTime dateNow = DateTime.now();
+      String extension = "wav";
+      String now = '${toDateString(dateNow)}_${toHourString(dateNow, '')}';
+      String newFile = "$appPath/$now.$extension";
+      print("filename $newFile");
+
+      final File fileApp = File('$newFile');
+      if (await fileApp.exists()) {
+        return fileApp.path;
+      } else {
+        await fileApp.create(recursive: true);
+        return fileApp.path;
+      }
+    } catch (error) {
+      print("error $error");
     }
   }
 }

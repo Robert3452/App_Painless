@@ -4,11 +4,11 @@ import '../../../constants.dart';
 
 class ScreenRecorder extends StatelessWidget {
   final String timer;
-  const ScreenRecorder({
-    Key key,
-    @required bool isRecording,
-    this.timer,
-  })  : _isRecording = isRecording,
+  final String textPhrase;
+
+  const ScreenRecorder(
+      {Key key, @required bool isRecording, this.timer, this.textPhrase})
+      : _isRecording = isRecording,
         super(key: key);
 
   final bool _isRecording;
@@ -38,6 +38,22 @@ class ScreenRecorder extends StatelessWidget {
               fontSize: 20,
             ),
           ),
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  textPhrase,
+                  style: TextStyle(
+                    color: kPrimaryLightColor,
+                    fontSize: 22,
+                  ),
+                ),
+              ],
+            ),
+          )
         ],
       ),
     );

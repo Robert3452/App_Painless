@@ -74,20 +74,25 @@ class _BodyState extends State<Body> {
   }
 
   Future<void> initSpeechState() async {
-    var status = await Permission.storage.request();
+    var storageStatus = await Permission.storage.request();
+    var manageStatus = await Permission.manageExternalStorage.request();
     var locationStatus = await Permission.locationWhenInUse.request();
 
-    if(locationStatus != PermissionStatus.granted){
+    if (locationStatus != PermissionStatus.granted) {
       throw "Location not granted";
     }
 
-    if (status != PermissionStatus.granted) {
+    if (storageStatus != PermissionStatus.granted &&
+        manageStatus != PermissionStatus.granted) {
       throw RecordingPermissionException('Storage permission not granted');
     }
     _pathFolder = await AppUtil.createInternalDir('Recorder');
 
     var hasSpeech = await speech.initialize(
-        onError: errorListener, onStatus: statusListener, debugLogging: true);
+      onError: errorListener,
+      onStatus: statusListener,
+      debugLogging: true,
+    );
 
     if (hasSpeech) {
       _localeNames = await speech.locales();
@@ -188,7 +193,7 @@ class _BodyState extends State<Body> {
     _myRecorder.startRecorder(toFile: newFile).then((value) {
       setState(() {});
       print("Recording");
-    }).catchError((onError){
+    }).catchError((onError) {
       print(onError);
     });
     _recorderSubscription = _myRecorder.onProgress.listen((event) {
@@ -282,7 +287,6 @@ class _BodyState extends State<Body> {
               BlocListener(
                 bloc: _authBloc,
                 listener: (context, state) {
-
                   if (state is SignedUpJWT) {
                     setState(() {
                       signed = state.response['message'];
@@ -296,7 +300,6 @@ class _BodyState extends State<Body> {
                 },
               ),
               BlocListener(
-
                 bloc: _postBloc,
                 listener: (context, state) {
                   print('hola bloc post aggression');
@@ -330,6 +333,7 @@ class _BodyState extends State<Body> {
                         : ScreenRecorder(
                             isRecording: _isRecording,
                             timer: _recorderTxt,
+                            textPhrase: phrase,
                           ),
                     InitSpeechButton(
                       hasSpeech: _hasSpeech,
