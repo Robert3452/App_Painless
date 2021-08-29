@@ -39,7 +39,7 @@ class AppUtil {
           "time": '${toHourString(created, ':')}',
           "name": basename(file.path)
         };
-        listFiles.add(fileItem);
+        listFiles.insert(0, fileItem);
       }
     }
     return listFiles;
