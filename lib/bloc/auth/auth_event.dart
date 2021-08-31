@@ -15,6 +15,16 @@ class SignInJWT extends AuthEvent {
   List<Object> get props => [email, password];
 }
 
+class SignInGoogle extends AuthEvent {
+  @override
+  List<Object> get props => [];
+}
+
+class SignOutGoogle extends AuthEvent {
+  @override
+  List<Object> get props => [];
+}
+
 class SignUpJWT extends AuthEvent {
   final String email;
   final String password;
@@ -22,7 +32,8 @@ class SignUpJWT extends AuthEvent {
   final String names;
   final String lastName;
 
-  SignUpJWT(this.email, this.password, this.confirm_pwd, this.names, this.lastName);
+  SignUpJWT(
+      this.email, this.password, this.confirm_pwd, this.names, this.lastName);
 
   @override
   List<Object> get props => [email, password, names];

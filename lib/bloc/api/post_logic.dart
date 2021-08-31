@@ -18,9 +18,7 @@ class SimpleHttpLogic extends PostLogic {
       Map<String, String> headers = {"Content-type": "application/json"};
       Map<String, String> queryParameters = {"phrase": sentence};
       String uri = Uri.https(envVars.URL_PY, path, queryParameters).toString();
-      print("url ${this.url} $url");
       http.Response response = await http.get(Uri.parse(uri), headers: headers);
-      print(response.body);
       Map<String, dynamic> body =
           jsonDecode(response.body); //Convierte una cadena en JSON
       return body;

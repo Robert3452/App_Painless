@@ -79,6 +79,7 @@ class HttpPhraseLogic extends PhraseLogic {
       String token = "";
       storage = await SharedPreferences.getInstance();
       token = storage.getString('jwt');
+      print(token);
       if (token == null) {
         throw ({
           "error": "There was an error",

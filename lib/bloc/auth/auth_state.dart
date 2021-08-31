@@ -8,6 +8,17 @@ class AuthInitial extends AuthState {
   List<Object> get props => [];
 }
 
+class SigningInGoogle extends AuthState{
+  @override
+  List<Object> get props => [];
+}
+
+class SignedOutGoogle extends AuthState{
+  @override
+  List<Object> get props => [];
+
+}
+
 class SignedUpJWT extends AuthState {
   final Map<String, dynamic> response;
 

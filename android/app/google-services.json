@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "330214106315",
+    "project_id": "painless-app",
+    "storage_bucket": "painless-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330214106315:android:5893d903579637514b674e",
+        "android_client_info": {
+          "package_name": "com.example.painless_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "330214106315-btcg16sgk5ontarhgfa5avs5u10q6hrj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.painless_app",
+            "certificate_hash": "08720a5d53d59723e30e4ae1f0246040113f10cb"
+          }
+        },
+        {
+          "client_id": "330214106315-d4f5sj8c7h183jehcvg5ocnh6re2gg4i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBpfJrz4a10yKTvqQyODAUpPG2p1ZbEXBs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330214106315-d4f5sj8c7h183jehcvg5ocnh6re2gg4i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

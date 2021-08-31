@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,9 +22,7 @@ class _BodyState extends State<Body> {
   final _formKey = GlobalKey<FormState>();
   final _authBloc = AuthBloc(authLogic: JWTAuth());
   String email;
-
   String password;
-
   final List<String> errors = [];
 
   void addError({String error}) {
@@ -32,6 +31,13 @@ class _BodyState extends State<Body> {
         errors.add(error);
       });
     }
+  }
+
+  @override
+  void dispose() {
+    // _authBloc.add(SignOutGoogle());
+
+    super.dispose();
   }
 
   void toggleAdvice({bool loggedIn}) {
@@ -76,7 +82,9 @@ class _BodyState extends State<Body> {
 
   @override
   void initState() {
+
     super.initState();
+
     email = "";
     password = "";
   }
@@ -170,7 +178,7 @@ class _BodyState extends State<Body> {
                         SizedBox(height: SizeConfig.screenHeight * 0.02),
                         SocialButton(
                           text: "Inicia sesión con Google",
-                          press: () {},
+                          press: _doLoginGoogle,
                           uriImage: 'assets/icons/signinGoogle.png',
                         ),
                         SizedBox(height: SizeConfig.screenHeight * 0.04),
@@ -195,6 +203,14 @@ class _BodyState extends State<Body> {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       _authBloc.add(SignInJWT(email, password));
+    }
+  }
+
+  void _doLoginGoogle() async{
+    try{
+      _authBloc.add(SignInGoogle());
+    }catch(error){
+      print(error);
     }
   }
 
