@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:painless_app/screens/recorder/widgets/signInButton.dart';
 import 'package:painless_app/screens/register/register.dart';
 import 'package:painless_app/screens/signin/signin.dart';
 import 'package:painless_app/size_config.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../constants.dart';
 import 'login_avatar.dart';
 
 class AppbarRecorder extends StatelessWidget {
   final bool showDashboard;
+
   const AppbarRecorder({
-    Key key, this.showDashboard,
+    Key key,
+    this.showDashboard,
   }) : super(key: key);
 
   @override
@@ -25,22 +29,11 @@ class AppbarRecorder extends StatelessWidget {
               Text(
                 !showDashboard ? '' : 'Dashboard',
                 style: TextStyle(
-                    fontSize: getProportionateScreenWidth(30),
-                    fontWeight: FontWeight.bold),
+                  fontSize: getProportionateScreenWidth(30),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              MaterialButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, Signin.routeName);
-                },
-                color: kSurfaceColor,
-                textColor: Colors.white,
-                child:
-                    // SignedAvatar(
-                    //   image: "https://static.toiimg.com/photo/76729750.cms",
-                    // ),
-                    LoginAvatar(),
-                shape: CircleBorder(),
-              )
+              SignInButton(),
             ],
           ),
         ));

@@ -50,7 +50,7 @@ class JWTAuth extends AuthLogic {
       return {"message": false};
     } else {
       Map<String, dynamic> responseBody = jsonDecode(res.body);
-      if (storage.containsKey("jwt") != null) {
+      if (storage.containsKey("jwt")) {
         storage.remove("jwt");
       }
       await storage.setString("jwt", responseBody['token']);
@@ -96,11 +96,11 @@ class JWTAuth extends AuthLogic {
       http.Response res = await http.post(Uri.parse(uri),
           body: jsonEncode(body), headers: headers);
       Map<String, dynamic> responseBody = jsonDecode(res.body);
-      if (storage.containsKey("jwt") != null) {
+      if (storage.containsKey("jwt")) {
         await storage.remove("jwt");
       }
       await storage.setString("jwt", responseBody['token']);
-      return responseBody;
+      return {"message": true};
     } catch (error) {
       print(error);
     }
@@ -109,8 +109,10 @@ class JWTAuth extends AuthLogic {
   @override
   Future<Map<String, dynamic>> signOutGoogle() async {
     try {
+      storage = await SharedPreferences.getInstance();
       await _googleSignIn.signOut();
-      if (storage.containsKey("jwt") != null) {
+
+      if (storage.containsKey("jwt")) {
         await storage.remove("jwt");
       }
 

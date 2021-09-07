@@ -28,8 +28,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           event.password, event.confirm_pwd, event.names, event.lastName);
       yield SignedUpJWT(response);
     } else if (event is SignInGoogle) {
-      await authLogic.signInGoogle();
-      yield SigningInGoogle();
+      Map<String, dynamic> response = await authLogic.signInGoogle();
+      yield SigningInGoogle(response);
     } else if (event is SignOutGoogle) {
       await authLogic.signOutGoogle();
       yield SignedOutGoogle();

@@ -112,7 +112,7 @@ class _BodyState extends State<Body> {
               child: BlocListener(
                 bloc: _authBloc,
                 listener: (context, state) {
-                  if (state is LoggedInJWT) {
+                  if (state is LoggedInJWT || state is SigningInGoogle ) {
                     toggleAdvice(loggedIn: state.response['message']);
                   }
                 },
@@ -124,10 +124,10 @@ class _BodyState extends State<Body> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          height: SizeConfig.screenHeight * 0.05,
+                          height: SizeConfig.screenHeight * 0.08,
                         ),
                         Text(
-                          "Inicia sesión",
+                          "Inicie sesión",
                           style: TextStyle(
                               fontSize: getProportionateScreenWidth(34),
                               fontWeight: FontWeight.bold,
@@ -136,7 +136,7 @@ class _BodyState extends State<Body> {
                         ),
                         SizedBox(height: SizeConfig.screenHeight * 0.07),
                         buildEmailFormField(),
-                        SizedBox(height: SizeConfig.screenHeight * 0.07),
+                        SizedBox(height: SizeConfig.screenHeight * 0.04),
                         buildPasswordFormField(),
                         SizedBox(height: SizeConfig.screenHeight * 0.03),
                         Row(
@@ -182,11 +182,11 @@ class _BodyState extends State<Body> {
                           uriImage: 'assets/icons/signinGoogle.png',
                         ),
                         SizedBox(height: SizeConfig.screenHeight * 0.04),
-                        SocialButton(
-                          text: "Inicia sesión con Facebook",
-                          press: () {},
-                          uriImage: 'assets/icons/signinFacebook.png',
-                        )
+                        // SocialButton(
+                        //   text: "Inicia sesión con Facebook",
+                        //   press: () {},
+                        //   uriImage: 'assets/icons/signinFacebook.png',
+                        // )
                       ],
                     ),
                   ),

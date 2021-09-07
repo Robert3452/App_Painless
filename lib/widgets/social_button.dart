@@ -16,10 +16,15 @@ class SocialButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       height: getProportionateScreenHeight(48),
-      child: FlatButton(
-        // shape:
-        //     RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
-        color: kPrimaryLightColor,
+      child: TextButton(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(kPrimaryLightColor),
+          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(0),
+            ),
+          ),
+        ),
         onPressed: press,
         child: Row(
           // mainAxisAlignment: MainAxisAlignment.spaceEvenly,

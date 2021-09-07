@@ -9,11 +9,14 @@ class AuthInitial extends AuthState {
 }
 
 class SigningInGoogle extends AuthState{
+  final Map<String, dynamic> response;
+  SigningInGoogle(this.response);
   @override
-  List<Object> get props => [];
+  List<Object> get props => [response];
 }
 
 class SignedOutGoogle extends AuthState{
+
   @override
   List<Object> get props => [];
 

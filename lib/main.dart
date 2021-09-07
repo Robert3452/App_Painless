@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:painless_app/constants.dart';
 import 'package:painless_app/routes.dart';
 import 'package:painless_app/screens/recorder/recorder.dart';
 import 'package:painless_app/theme.dart';
