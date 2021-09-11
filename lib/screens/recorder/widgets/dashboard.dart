@@ -141,7 +141,7 @@ class DashboardItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Frases ${type ? "positivas" : "negativas"}",
+                        "Frases ${type ? "ofensivas" : "no ofensivas"}",
                         style: TextStyle(
                             fontSize: getProportionateScreenWidth(18)),
                       ),

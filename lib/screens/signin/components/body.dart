@@ -142,14 +142,14 @@ class _BodyState extends State<Body> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            InkWell(
-                              onTap: () {},
-                              child: Text(
-                                "¿Contraseña olvidada?",
-                                style: TextStyle(
-                                    fontSize: 14, color: kSecondaryColor),
-                              ),
-                            )
+                            // InkWell(
+                            //   onTap: () {},
+                            //   child: Text(
+                            //     "¿Contraseña olvidada?",
+                            //     style: TextStyle(
+                            //         fontSize: 14, color: kSecondaryColor),
+                            //   ),
+                            // )
                           ],
                         ),
                         SizedBox(height: SizeConfig.screenHeight * 0.03),

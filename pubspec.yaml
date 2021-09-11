@@ -1,5 +1,5 @@
 name: painless_app
-description: A new Flutter project.
+description: An application that is capable to clasify offensive phrases with an algorithm hosted in an api server.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
