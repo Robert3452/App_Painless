@@ -11,7 +11,7 @@ Esta aplicación fue creada como una herramienta de ayuda y detección de violen
    ![Permiso almacenamiento](./assets/images/permiso_almacenamiento.png)
     ![Permiso audio](./assets/images/permiso_audio.png)
     ![Permiso de escritura](./assets/images/permiso_deescritura.png)
-    ![Permiso de ubicación](./assets/images/permiso_ubicación.png)
+    ![Permiso de ubicación](./assets/images/permiso_ubicacion.png)
 * Una vez aceptado los permisos, diríjase hacia el ícono de inicio de sesión con el ícono usuario 👨‍💼👩‍💼 ubicado en la esquina superior derecha
 
 * Inicie sesión con google o una cuenta existente o regístrese dando un clic sobre el botón ***Regístrate***.
